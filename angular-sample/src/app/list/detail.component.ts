@@ -15,6 +15,7 @@ export class ListDetailComponent {
     minValue: string;
     maxValue: string;
     step: string;
+    message = '';
 
     constructor(store: StoreService, private route: ActivatedRoute) {
         const comboBoxValues = store.comboBoxValues;
