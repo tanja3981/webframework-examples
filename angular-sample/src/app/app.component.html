@@ -1,0 +1,14 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" routerLinkActive="active"  routerLink='/' [routerLinkActiveOptions]="{exact: true}"><span>Angular Sample</span></a>
+        <ul class="navbar-nav mr-auto">
+            <li routerLink='/profile' routerLinkActive="active" class="nav-item"><a routerLink='/profile' class="nav-link"><span>Profile</span></a>
+            <li routerLink='/list' routerLinkActive="active" class="nav-item"><a routerLink='/list' class="nav-link"><span>List</span></a>
+            <li routerLink='/complex' routerLinkActive="active" class="nav-item"><a routerLink='/complex' class="nav-link"><span>Complex</span></a>
+        </ul>
+    </nav>
+    <div class="container-fluid">
+        <router-outlet></router-outlet>
+    </div>
+</div>

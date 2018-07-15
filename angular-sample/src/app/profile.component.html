@@ -1,0 +1,44 @@
+<div >
+    <div class="row justify-content-center m-4">
+        <div class="col-8">
+            <div *ngIf="message" class="alert alert-success" role="alert">
+                 {{message}}
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Profile</h5>
+                    <form [formGroup]="form">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" [ngClass]="{'is-invalid' : form.get('name').touched && form.get('name').invalid}" class='form-control' formControlName="name" name="name" placeholder="Enter name"/>
+                            <div *ngIf="form.get('name').touched && form.get('name').invalid" class="invalid-feedback">Please enter a name with 4 to 13 characters</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail</label>
+                            <input type="text" [ngClass]="{'is-invalid' : form.get('email').touched && form.get('email').invalid}" class='form-control' formControlName="email" name="email" placeholder="Enter e-mail"/>
+                            <div *ngIf="form.get('email').touched && form.get('email').invalid" class="invalid-feedback">Please enter a valid e-mail address</div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" formControlName="allowPhone" id="allowPhone">
+                            <label class="form-check-label" for="allowPhone">
+                                Allow phone calls
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone number</label>
+                            <input type="text" [ngClass]="{'is-invalid' : form.get('phone').touched && form.get('phone').invalid}" class='form-control' formControlName="phone" name="phone" placeholder="Enter phone number"/>
+                            <div *ngIf="form.get('phone').touched && form.get('phone').invalid" class="invalid-feedback">Please enter a valid phone number</div>
+                        </div>
+                        <div>
+                            name:{{form.value | json}}
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">Save</button>
+                            <button type="button" class="ml-3 btn btn-secondary" (click)="cancel()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

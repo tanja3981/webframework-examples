@@ -1,0 +1,53 @@
+<div >
+        <div>
+                <h5 class="card-title">
+                    <a [routerLink]="['/list',value,'view']"><i class="text-dark fa fa-arrow-circle-left"></i></a> View item
+                </h5>
+        
+                <form [formGroup]="form">
+                    <div class="form-group">
+                        <label for="name">Value:</label>
+                        <input type="text" class="form-control" formControlName="value"/>
+                    </div>                        
+                    <div class="form-group">
+                        <label for="name">Label:</label>
+                        <input type="text" [ngClass]="{'is-invalid' : form.get('label').invalid}" class='form-control' formControlName="label" placeholder="Enter label"/>
+                        <div *ngIf="form.get('label').errors && form.get('label').errors.required" class="invalid-feedback">Must not be empty</div>
+                        <div *ngIf="form.get('label').errors && form.get('label').errors.minlength" class="invalid-feedback">Must be at least 1 character</div>
+                        <div *ngIf="form.get('label').errors && form.get('label').errors.maxlength" class="invalid-feedback">Must be at most 5 characters</div>
+                    </div>                        
+                    <div class="form-group">
+                        <label for="name">Minimum Value:</label>
+                        <input type="text" [ngClass]="{'is-invalid' : form.get('minValue').invalid}" class='form-control' formControlName="minValue" placeholder="Enter min value"/>
+                        <div *ngIf="form.get('minValue').errors && form.get('minValue').errors.required" class="invalid-feedback">Must not be empty</div>
+                        <div *ngIf="form.get('minValue').errors && form.get('minValue').errors.isNumeric" class="invalid-feedback">Must be a number</div>
+                        <div *ngIf="form.get('minValue').errors && form.get('minValue').errors.min" class="invalid-feedback">Must be at least 10</div>
+                        <div *ngIf="form.get('minValue').errors && form.get('minValue').errors.max" class="invalid-feedback">Must be at most 1000</div>
+                        <div *ngIf="form.get('minValue').errors && form.get('minValue').errors.max" class="invalid-feedback">Must be at most 1000</div>
+                        <div *ngIf="form.errors?.minLessThanMax" class="invalid-feedback">Must be less than the maxmimum</div>
+                    </div>                        
+                    <div class="form-group">
+                        <label for="name">Maximum Value:</label>
+                        <input type="text" [ngClass]="{'is-invalid' : form.get('maxValue').invalid}" class='form-control' formControlName="maxValue" placeholder="Enter max value"/>
+                        <div *ngIf="form.get('maxValue').errors && form.get('maxValue').errors.required" class="invalid-feedback">Must not be empty</div>
+                        <div *ngIf="form.get('maxValue').errors && form.get('maxValue').errors.isNumeric" class="invalid-feedback">Must be a number</div>
+                        <div *ngIf="form.get('maxValue').errors && form.get('maxValue').errors.min" class="invalid-feedback">Must be at least 10</div>
+                        <div *ngIf="form.get('maxValue').errors && form.get('maxValue').errors.max" class="invalid-feedback">Must be at most 1000</div>
+                        <div *ngIf="form.errors?.minLessThanMax" class="invalid-feedback">Must be more than the minimum</div>
+                    </div>                        
+                    <div class="form-group">
+                        <label for="name">Step:</label>
+                        <input type="text" [ngClass]="{'is-invalid' : form.get('step').invalid}" class='form-control' formControlName="step" placeholder="Enter step"/>
+                        <div *ngIf="form.get('step').errors && form.get('step').errors.required" class="invalid-feedback">Must not be empty</div>
+                        <div *ngIf="form.get('step').errors && form.get('step').errors.isNumeric" class="invalid-feedback">Must be a number</div>
+                        <div *ngIf="form.get('step').errors && form.get('step').errors.min" class="invalid-feedback">Must be at least 5</div>
+                        <div *ngIf="form.get('step').errors && form.get('step').errors.max" class="invalid-feedback">Must be at most 100</div>
+                    </div>        
+                    {{this.form.errors | json}}                
+                    <div class="mt-2">
+                        <button type="button" href="#" class="btn btn-primary" [disabled]="form.invalid" (click)="save()">Save</button>
+                        <button type="button" href="#" class="ml-3 btn btn-secondary" (click)="back()">Cancel</button>
+                    </div>     
+                </form>
+            </div>
+</div>

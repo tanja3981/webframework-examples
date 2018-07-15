@@ -1,0 +1,13 @@
+<div>
+    <h5 class="card-title">Search list of combobox entries</h5>
+    <div class="list-group">
+        <a [routerLink]="[item.value, 'view']" class="list-group-item list-group-item-action flex-column align-items-start" 
+            *ngFor="let item of comboBoxValues; let i=index">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ item.label }}</h5>
+                <small>{{ i+1 }}</small>
+            </div>
+            <small class="text-muted">Label: {{item.label}}, value: {{item.value}}, minValue: {{item.minValue}}, maxValue: {{item.maxValue}}, step: {{item.step}}</small>
+        </a>    
+    </div>
+</div>

@@ -1,0 +1,31 @@
+<form [formGroup]="form" class="row justify-content-center m-4">
+    <div class="col-4" *ngFor='let column of form.controls; let ci=index' [formGroupName]="ci">
+        <div class="card" formGroupName='selections'>            
+            <div class="card-body" *ngFor='let s of column.get("selections").controls; let si=index' [formGroupName]="si">
+                <div class="row">
+                    <div class="col-3">
+                        <select class="form-control" (change)="updatePrice(ci,si)" formControlName="selected">
+                            <option *ngFor='let opt of allowedSelections(ci, si)' [value]="opt.value">{{opt.label}}</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <input type="text" autocomplete="off"  (change)="updatePrice(ci,si)" [ngClass]="{'is-invalid': s.get('amount').invalid}"  class="form-control" formControlName="amount" placeholder="Enter amount"/>
+                        <div *ngIf="s.get('amount').errors && s.get('amount').errors.required" class="invalid-feedback">value missing</div>
+                        <div *ngIf="s.get('amount').errors && s.get('amount').errors.isNumeric" class="invalid-feedback">must be numeric</div>
+                        <div *ngIf="s.get('amount').errors && s.get('amount').errors.min" class="invalid-feedback">Must be at least 15</div>
+                        <div *ngIf="s.get('amount').errors && s.get('amount').errors.max" class="invalid-feedback">Must be at most 150</div>
+                    </div>
+                    <div class="col-3">
+                        {{s.get('price').value}} €
+                    </div>
+                    <div class="col-1">
+                        <a href="#" (click)="remove($event, ci, si)"><i class="text-dark fa fa-trash-o"></i></a>
+                    </div>
+                </div>
+            </div>                    
+            <div class="col-1 pb-3 pt-3" *ngIf="column.get('selections').controls.length < comboBoxValues.length">
+                <a href="#" (click)="add($event, ci)"><i class="text-dark fa fa-plus"></i></a>
+            </div>
+        </div>
+    </div>
+</form> 
