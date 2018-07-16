@@ -10,8 +10,8 @@
                             </select>
                         </div>
                         <div class="col-4">
-                            <input type="text"  autocomplete="off" :class="{'is-invalid' : s.amount.$error, 'form-control': true}" :value="s.amount.$model" 
-                                @input="inputAmount(s, c_idx, s_idx, $event)" 
+                            <input type="text"  autocomplete="off" :class="{'is-invalid' : s.amount.$error, 'form-control': true}" :value="s.amount.$model"
+                                @input="inputAmount(s, c_idx, s_idx, $event)"
                                 @change="changeAmount(s, c_idx, s_idx, $event)" name="amount" placeholder="Enter amount"/>
                             <div v-if="s.amount.$error" class="invalid-feedback">{{messageFor(s.amount)}}</div>
                         </div>
@@ -28,7 +28,7 @@
                 </div>
             </div>
         </div>
-    </form>                 
+    </form>
 </template>
 
 <script>
@@ -59,36 +59,30 @@ export default Vue.extend({
   methods: {
       debug(v) { console.log("[debug] ", v);},
       changeSelect(selectModelData, c_idx, s_idx, evt) {
-          selectModelData.$model.selected = evt.target.value; 
-          this.updatePrice(c_idx, s_idx, selectModelData, 'selected')
+          selectModelData.$model.selected = evt.target.value;
+          this.updatePrice(c_idx, s_idx, selectModelData)
       },
       changeAmount(selectModelData, c_idx, s_idx, evt) {
-          console.log("evt", evt);
-          selectModelData.amount.$model = evt.target.value; 
-          this.updatePrice(c_idx, s_idx, selectModelData, 'selected')
+          selectModelData.amount.$model = evt.target.value;
+          this.updatePrice(c_idx, s_idx, selectModelData)
       },
       inputAmount(selectModelData, c_idx, s_idx, evt) {
-          console.log("evt", evt);
-          selectModelData.amount.$model = evt.target.value; 
+          selectModelData.amount.$model = evt.target.value;
       },
       allowedSelections: allowedSelections,
       messageFor(v) {
-          console.log("messageFor", v);
           if (!v.$error) return '-';
           else if (!v.required) return 'enter value';
           else if (!v.numeric) return 'must be a number';
           else if (!v.minValue) return 'must be at least 15';
           else if (!v.maxValue) return 'must be at most 150';
-          return ''; 
+          return '';
       },
-      updatePrice (columnIdx, selectionIdx, selectionModel, cause) {
+      updatePrice (columnIdx, selectionIdx, selectionModel) {
           if (selectionModel.$invalid) {
-              console.log("can't compute - error", cause);
-                this.columns[columnIdx].selections[selectionIdx].price = '';  
+                this.columns[columnIdx].selections[selectionIdx].price = '';
           } else {
-            console.log("start update price", cause)
             window.setTimeout(() => {
-            console.log("finsish update price", cause)
                 let price = (Math.random()*100+20).toFixed();
                 this.columns[columnIdx].selections[selectionIdx].price = price;
             }, 1000);

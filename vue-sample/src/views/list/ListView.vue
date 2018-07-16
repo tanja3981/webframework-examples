@@ -14,10 +14,6 @@
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "list",
-  components: {},
-  computed: {
-  }
-
+  name: "listview",
 });
 </script>

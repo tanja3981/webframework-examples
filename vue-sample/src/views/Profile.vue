@@ -12,23 +12,23 @@
                             <label for="name">Name</label>
                             <input type="text" :class="{'is-invalid' : $v.profile.name.$error, 'form-control': true}" v-model.lazy.trim="$v.profile.name.$model" name="name" placeholder="Enter name" :disabled="readonly"/>
                             <div v-if="$v.profile.name.$error" class="invalid-feedback">Please enter a name with 4 to 13 characters</div>
-                        </div>                        
+                        </div>
                         <div class="form-group">
                             <label for="email">E-mail</label>
                             <input type="text" :class="{'is-invalid' : $v.profile.email.$error, 'form-control': true}" v-model.lazy.trim="$v.profile.email.$model" name="email" placeholder="Enter e-mail" :disabled="readonly"/>
                             <div v-if="$v.profile.email.$error" class="invalid-feedback">Please enter a valid e-mail address</div>
-                        </div>                               
+                        </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" v-model="$v.profile.allowPhone.$model" id="allowPhone" :disabled="readonly">
                             <label class="form-check-label" for="allowPhone">
                                 Allow phone calls
                             </label>
-                        </div>             
+                        </div>
                         <div class="form-group">
                             <label for="phone">Phone number</label>
                             <input type="text" :class="{'is-invalid' : $v.profile.phone.$error, 'form-control': true}" v-model.lazy.trim="$v.profile.phone.$model" name="phone" placeholder="Enter phone number" :disabled="readonly || !profile.allowPhone"/>
                             <div v-if="$v.profile.phone.$error" class="invalid-feedback">Please enter a valid phone number</div>
-                        </div>                               
+                        </div>
                     </form>
                     <div>
                         name:{{profile.name}} mail:{{profile.email}} phone:{{profile.phone}}
@@ -40,12 +40,11 @@
                 </div>
             </div>
         </div>
-    </div>     
+    </div>
 </template>
 
 <script>
 import Vue from 'vue';
-// import { mapGetters, mapState } from 'vuex';
 import cloneDeep from 'lodash/cloneDeep';
 import { required, minLength, maxLength, email } from 'vuelidate/lib/validators'
 
@@ -81,7 +80,7 @@ export default Vue.extend({
         },
     },
   },
-  methods: {      
+  methods: {
       cancel() {
           this.$router.push({name: 'home'});
       },

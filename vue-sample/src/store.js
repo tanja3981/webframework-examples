@@ -1,9 +1,9 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
     state: {
         profile: {
             name: '',
@@ -18,7 +18,6 @@ export default new Vuex.Store({
             { label: 'D', value: 'D', minValue: 10, maxValue: 150, step: 5 },
             { label: 'E', value: 'E', minValue: 10, maxValue: 150, step: 5 }
         ],
-        forceNavigationKey: 1,
         flashMessage: '',
       },
       getters: {
@@ -36,9 +35,6 @@ export default new Vuex.Store({
             console.log('update profile', profile);
             Object.assign(state.profile, profile);
         },
-        forceNavigationKey(state) {
-            state.forceNavigationKey++;
-        },
         updateListItem(state, {oldData, newData}) {
             console.log('updateListItem', oldData, newData);
             Object.assign(oldData, newData);
@@ -49,7 +45,6 @@ export default new Vuex.Store({
       },
       actions: {
             updateListItem({commit, state }, newData) {
-                console.log("store.updateListItem", newData);
                 let oldData = state.comboBoxValues.find(cbv => cbv.value === newData.value);
                 if (oldData) commit('updateListItem', {oldData, newData});
             },
@@ -63,3 +58,5 @@ export default new Vuex.Store({
             }
       },
 });
+
+export default store;

@@ -10,42 +10,44 @@ import Complex from './views/Complex.vue';
 
 Vue.use(Router);
 
-export default new Router({
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Home,
-    },
-    {
-      path: '/list',
-      component: ListView,
-      children: [
+const router = new Router({
+    routes: [
         {
-          path: '',
-          name: 'list',
-          component: ListComponent
+            path: '/',
+            name: 'home',
+            component: Home,
         },
         {
-          path: ':value/view',
-          name: 'list.view',
-          component: DetailComponent
-        },
-        {
-          path: ':value/edit',
-          name: 'list.edit',
-          component: EditComponent
-        },
-      ]},
-    {
-      path: '/profile',
-      name: 'profile',
-      component: Profile,
-    },
-    {
-      path: '/complex',
-      name: 'complex',
-      component: Complex,
-    },
-  ],
-});
+            path: '/list',
+            component: ListView,
+            children: [
+                {
+                    path: '',
+                    name: 'list',
+                    component: ListComponent
+                },
+                {
+                    path: ':value/view',
+                    name: 'list.view',
+                    component: DetailComponent,
+                },
+                {
+                    path: ':value/edit',
+                    name: 'list.edit',
+                    component: EditComponent,
+                },
+            ]},
+            {
+                path: '/profile',
+                name: 'profile',
+                component: Profile,
+            },
+            {
+                path: '/complex',
+                name: 'complex',
+                component: Complex,
+            },
+        ],
+    });
+
+export default router;

@@ -1,7 +1,7 @@
 <template>
     <div>
         <h5 class="card-title"><router-link :to="{ name: 'list'}"><i class="text-dark fa fa-arrow-circle-left"></i></router-link> View item
-        <div class="ml-auto" style="float: right"><router-link :to="{ name: 'list.edit', params: { value: value }}"><i class="text-dark fa fa-edit"></i></router-link></div>
+        <div class="ml-auto" style="float: right"><router-link :to="{ name: 'list.edit', params: { value: item.value }}"><i class="text-dark fa fa-edit"></i></router-link></div>
         </h5>
 
             <div v-if="message" class="alert alert-success" role="alert">
@@ -10,24 +10,24 @@
 
         <form>
             <div class="form-group">
-                <label for="name">Label:</label>{{label}}
-            </div>                        
+                <label for="name">Label:</label>{{item.label}}
+            </div>
             <div class="form-group">
                 <label for="name">Value:</label>
-                {{value}}
-            </div>                        
+                {{item.value}}
+            </div>
             <div class="form-group">
                 <label for="name">Minimum Value:</label>
-                {{minValue}}
-            </div>                        
+                {{item.minValue}}
+            </div>
             <div class="form-group">
                 <label for="name">Maximum Value:</label>
-                {{maxValue}}
-            </div>                        
+                {{item.maxValue}}
+            </div>
             <div class="form-group">
                 <label for="name">Step:</label>
-                {{step}}
-            </div>                        
+                {{item.step}}
+            </div>
         </form>
     </div>
 
@@ -35,42 +35,40 @@
 
 <script>
 import Vue from "vue";
+import {beforeEnterListItem, beforeUpdateListItem} from './routeEvents';
 
 export default Vue.extend({
-  name: "list",
-  created() {
-    console.log("created");
-    if (!this.valid) {
-        this.$router.push({name: 'list'});
-    }
-    this.message = this.$store.getters.getFlashMessage;
-    this.$store.dispatch('popLastFlashMessage');
-  },
-  data() {
-    console.log("data", this.message);
-    let value = this.$store.getters.getComboBoxValue(this.$route.params.value);
-    if (!value) {
+    name: "listdetails",
+    created() {
+        this.message = this.$store.getters.getFlashMessage;
+        this.$store.dispatch('popLastFlashMessage');
+    },
+    data() {
+        console.log("data");
         return {
-            label: '',
-            value: '',
-            minValue: '',
-            maxValue: '',
-            step: '',    
-            valid: false,
+            item: {
+                label: '-',
+                value: '-',
+                minValue: 0,
+                maxValue: 0,
+                step: 0
+            },
+            message: ''
         };
+    },
+    beforeRouteEnter (to, from, next) {
+        beforeEnterListItem(to, from, next);
+    },
+    beforeRouteUpdate (to, from, next) {
+        beforeUpdateListItem(this, to, from, next);
+    },
+    methods: {
+        edit() {
+            this.$router.push({name: 'list.edit', params:{value: this.item.value}});
+        },
+        back() {
+            this.$router.push({name: 'list'});
+        }
     }
-    return {...value, message:'hello', valid: true};
-  },
-  methods: {
-      edit() {
-          console.log("edit");
-          this.$router.push({name: 'list.edit', params:{value: this.value}});
-      },
-      back() {
-          console.log("BACK");
-          this.$router.push({name: 'list'});
-      }
-  },
-  components: {},
 });
 </script>
