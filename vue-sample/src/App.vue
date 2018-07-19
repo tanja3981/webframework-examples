@@ -22,7 +22,16 @@ import Vue from 'vue';
 import store from './store';
 
 export default Vue.extend({
-  name: 'app',
-  store
+    name: 'app',
+    store,
+    created: function() {
+        console.log("created");
+/*      Example for call via proxy
+        fetch('/computePrice/A/50').then(response => response.json()).then(val => {
+            console.log("got", val);
+        }).catch(val => {
+            console.log("error", val);
+        }); */
+    }
 });
 </script>

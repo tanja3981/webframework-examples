@@ -30,9 +30,6 @@
                             <div v-if="$v.profile.phone.$error" class="invalid-feedback">Please enter a valid phone number</div>
                         </div>
                     </form>
-                    <div>
-                        name:{{profile.name}} mail:{{profile.email}} phone:{{profile.phone}}
-                    </div>
                     <div class="mt-2">
                         <button type="button" href="#" class="btn btn-primary" @click="save" :disabled="$v.$invalid">Save</button>
                         <button type="button" href="#" class="ml-3 btn btn-secondary" @click="cancel">Cancel</button>
@@ -49,6 +46,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import { required, minLength, maxLength, email } from 'vuelidate/lib/validators'
 
 let  phoneOk = function(value) {
+    console.log("phoneOk");
         if (!this.profile.allowPhone) return true;
         return minLength(3)(value) && maxLength(14)(value);
     };
