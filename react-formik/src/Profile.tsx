@@ -37,15 +37,12 @@ const validatePhonenumber = composeValidators(required('Please enter a phone num
 const validatePhone = (allowPhone:boolean) => {console.log("validatePhone", allowPhone);
     return !allowPhone ? alwaysTrue : validatePhonenumber};
 
-
 const validate = (values: IPageData) => {
-    return {
-        profile: {
-            name  : validateName(values.profile.name),
-            email :  validateEMail(values.profile.email),
-            phone :  validatePhone(values.profile.allowPhone)(values.profile.phone),
-        }
-    };
+    return {profile: {
+        name  : validateName(values.profile.name),
+        email :  validateEMail(values.profile.email),
+        phone :  validatePhone(values.profile.allowPhone)(values.profile.phone),
+    }}
 }
 
 
@@ -121,7 +118,7 @@ const Complex = () => (
                                     touched: {JSON.stringify(touched)}
                                     </div>
                                     <div className="mt-2">
-                                        <button type="button" className="btn btn-primary" disabled={!touched.profile || errors.profile ? true : false}>Save</button>
+                                        <button type="button" className="btn btn-primary" disabled={Object.keys(errors.profile || {}).length>0 ? true : false}>Save</button>
                                         <button type="button" className="ml-3 btn btn-secondary">Cancel</button>
                                     </div>
                                 </div>
