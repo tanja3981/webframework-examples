@@ -81,14 +81,14 @@ class Profile extends React.Component<{}, {}> {
                             <input type="text" className={(nameChild.invalid? 'is-invalid' : '') + ' form-control'}
                             onChange={nameProps.onChange} onBlur={nameProps.onBlur} value={nameProps.value}
                             name="profile.name" placeholder="Enter name"/>
-                        {nameChild.invalid && <div className="invalid-feedback">{nameChild.message}</div>}
+                        {nameChild.invalid && <div className="invalid-feedback">{(nameChild as FormControlValue<string>).message}</div>}
                         </div>
                         <div className="form-group">
                             <label htmlFor="email">E-mail</label>
                             <input type="text" className={(emailChild.invalid ? 'is-invalid' : '') + ' form-control'}
                                 onChange={emailProps.onChange} onBlur={emailProps.onBlur} value={emailProps.value}
                                 name="profile.email" placeholder="Enter e-mail" />
-                            {emailChild.invalid && <div className="invalid-feedback">{emailChild.message}</div>}
+                            {emailChild.invalid && <div className="invalid-feedback">{(emailChild as FormControlValue<string>).message}</div>}
                         </div>
                         </>);
                     }
