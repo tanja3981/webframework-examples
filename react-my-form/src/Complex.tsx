@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { Formik, Field, FieldArray } from 'formik';
-import {required, numeric, min, max, composeValidators} from './validators';
+import {required, numeric, min, max, composeValidators, alwaysTrue} from './validators';
 import {ISelectionData, IColumnSelection} from './types';
 import { connect } from 'react-redux';
+import FormModel, {ComponentProps, ComponentState, TPropsForComponent} from './formModelReact';
+import { FormControlMap, FormControlValue, FormControlArray } from './formModel';
 
 interface IComboBoxValue {
     label: string,
@@ -13,128 +14,148 @@ interface IComboBoxValue {
 }
 
 export function allowedSelections(comboBoxValues: IComboBoxValue[], columnSelections: IColumnSelection[], selected: string|undefined) {
-    console.log("allowedSelections", comboBoxValues, columnSelections, selected);
     let forbidden = columnSelections.map(s => s.selected).filter(v => v !== selected);
     return comboBoxValues.filter(cbv => !forbidden.find(v => v===cbv.value));
 }
 
-export function updatePrice(setFieldValue: (field: string, value: any) => void, selected: string, amount: string, cIdx: number, sIdx: number, errors: any) {
-    console.log("updatePrice", cIdx, sIdx, selected);
-    if (errors && errors.columns && errors.columns[cIdx] && errors.columns[cIdx].selections
-        && errors.columns[cIdx].selections[sIdx] && errors.columns[cIdx].selections[sIdx].amount) {
+export function updatePrice(selectionModel: ReturnType<typeof forSelection>) {
+    console.log("updatePrice", selectionModel);
+    if (selectionModel.invalid) {
         console.log("ignore updatePrice due to error");
     } else {
-        console.log("updatePrice", cIdx, sIdx, selected, amount, errors) ;
         window.setTimeout(() => {
-            setFieldValue(`columns[${cIdx}].selections[${sIdx}].price`, Number(amount) * 5, );
+            selectionModel.children.price.value = Number(selectionModel.children.amount.value ) * 5;
         }, 1000);
     }
 }
 
 const amountValidator = composeValidators(required('Please enter amount'), numeric('must be a number'), min(5)('Must be at least 5'), max(100)('Must be less than 100'));
 
-class Complex extends React.Component<any> {
-    public render() {
-        let gComboBoxValues = this.props.comboBoxValues;
-        let initialData : ISelectionData[] = this.props.complex;
-        return (<div>
-            <Formik
-                initialValues={{
-                    columns: initialData,
-                }}
-                validateOnChange={true}
-                validate={values => {
-                    let errors = {columns: values.columns.map(column => {
-                        return {selections: column.selections.map(sel =>
-                            ({amount: amountValidator(sel.amount as string)})
-                        )}}
-                    )};
-                    console.log("validate errors", errors, values);
-                    return errors;
-                }}
-                onSubmit={(
-                values,
-                { setSubmitting, setErrors /* setValues and other goodies */ }
-                ) => {
-                console.log("submitting", values);
-                }}
-                render={({
-                values,
-                errors,
-                touched,
-                handleChange,
-                handleBlur,
-                handleSubmit,
-                isSubmitting,
-                setFieldValue
-                }) => {
-                    console.log("render ", values, touched, errors);
-                    return (
-                    <form className="row justify-content-center m-4" onSubmit={handleSubmit}>
-                        <FieldArray
-                            name="columns"
-                            render={colArrayHelpers => {
-                                return values.columns.map((column, cIdx) =>
-                                (<div className="col-4" key={cIdx}>
-                                    <div className="card">
-                                        <FieldArray
-                                            name={`columns[${cIdx}].selections`}
-                                            render={selArrayHelpers => {
-                                                return values.columns[cIdx].selections.map((sel, sIdx) => (
-                                                <div className="card-body" key={sIdx}>
-                                                    <div className="row">
-                                                        <div className="col-3">
-                                                            <select name={`columns[${cIdx}].selections[${sIdx}].selected`} className="form-control" value={values.columns[cIdx].selections[sIdx].selected} onChange={(evt) => {handleChange(evt); updatePrice(setFieldValue, evt.target.value, values.columns[cIdx].selections[sIdx].amount, cIdx, sIdx, errors);}} onBlur={handleBlur}>
-                                                            {
-                                                                allowedSelections(gComboBoxValues, values.columns[cIdx].selections, sel.selected).map(opt =>
-                                                                (
-                                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                                                ))
-                                                            }
-                                                            </select>
-                                                        </div>
-                                                        <div className="col-4">
-                                                            <input type="text"  autoComplete="off" className={errors && errors.columns && errors.columns[cIdx] &&  errors.columns[cIdx].selections && errors.columns[cIdx].selections[sIdx]
-                                                                    && errors.columns[cIdx].selections[sIdx].amount ? 'is-invalid form-control' : 'form-control'}
-                                                                name={`columns[${cIdx}].selections[${sIdx}].amount`}
-                                                                value={values.columns[cIdx].selections[sIdx].amount} onChange={(evt) => {handleChange(evt);}} onBlur={(evt) => {handleBlur(evt); updatePrice(setFieldValue, values.columns[cIdx].selections[sIdx].selected, values.columns[cIdx].selections[sIdx].amount, cIdx, sIdx, errors);}}
-                                                                placeholder="Enter amount"/>
-                                                            {errors && errors.columns && errors.columns[cIdx] &&  errors.columns[cIdx].selections && errors.columns[cIdx].selections[sIdx]
-                                                                    && errors.columns[cIdx].selections[sIdx].amount
-                                                                && <div className="invalid-feedback">{errors.columns[cIdx].selections[sIdx].amount}</div>}
-                                                        </div>
-                                                        <div className="col-3">
-                                                            {values.columns[cIdx].selections[sIdx].price} €
-                                                        </div>
-                                                        <div className="col-1">
-                                                            <a href="#" onClick={(evt) => {evt.preventDefault(); selArrayHelpers.remove(sIdx)}}><i className="text-dark fa fa-trash-o"/></a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                ));
-                                            }}
-                                        />
-                                        { values.columns[cIdx].selections.length < gComboBoxValues.length ?
-                                        (<div className="col-1 pb-3 pt-3">
-                                            <a href="#" onClick={(evt) => {evt.preventDefault(); setFieldValue('columns[${cIdx}].selections', values.columns[cIdx].selections.push({selected: allowedSelections(gComboBoxValues, values.columns[cIdx].selections, undefined)[0].value, amount: '15', price: null}));}}><i className="text-dark fa fa-plus"/></a>
-                                        </div>) : null
-                                        }
-                                    </div>
-                                </div>));
-                            }}
-                        />
-                    </form>)
-                    }}
-                />
-            </div>);
-        }
+interface IProps {
+    comboBoxValues: IComboBoxValue[];
+    complex: ISelectionData[];
 }
 
-  /*
- autocomplete="off"
-{'is-invalid' : s.amount.$error, '
-*/
+let forSelection = (selection: IColumnSelection) => {
+    console.log('*forSelection', selection);
+    return new FormControlMap({
+    selected: new FormControlValue<string>(alwaysTrue, selection.selected),
+    amount: new FormControlValue<string>(alwaysTrue, selection.amount),
+    price: new FormControlValue<number|null>(alwaysTrue, null)
+})};
 
+let forSelectionsInColumn = (selections: IColumnSelection[]) => {
+    console.log("*forSelectionsInColumn", selections);
+    return new FormControlArray(forSelection, alwaysTrue);
+}
+
+let forColumn = (selectionData: ISelectionData) => {
+    return new FormControlMap({
+        selections: forSelectionsInColumn(selectionData.selections)
+    })
+}
+
+
+// onChange={(evt) => {handleChange(evt); updatePrice(setFieldValue, evt.target.value, values.columns[cIdx].selections[sIdx].amount, cIdx, sIdx, errors);}} onBlur={handleBlur}>
+// value={values.columns[cIdx].selections[sIdx].amount} onChange={(evt) => {handleChange(evt);}} onBlur={(evt) => {handleBlur(evt); updatePrice(setFieldValue, values.columns[cIdx].selections[sIdx].selected, values.columns[cIdx].selections[sIdx].amount, cIdx, sIdx, errors);}}
+// evt.preventDefault(); s..remove(sIdx)}
+const SingleSelection = ({selection, propsForComponent, comboBoxValues, remove, selectionsInColumn} :
+    {selection: ReturnType<typeof forSelection>,
+        propsForComponent: TPropsForComponent,
+        comboBoxValues: IComboBoxValue[],
+        remove: () =>void,
+        selectionsInColumn: IColumnSelection[]
+    }) => (
+        <div className="card-body">
+            <div className="row">
+            <div className="col-3">
+                <select className="form-control" {...propsForComponent(selection.children.selected)}
+                    onChange={(evt) => {propsForComponent(selection.children.selected).onChange(evt); updatePrice(selection);}}
+                    onBlur={(evt) => propsForComponent(selection.children.selected).onBlur(evt)}
+                    value={propsForComponent(selection.children.selected).value}
+                >
+                {
+                    allowedSelections(comboBoxValues, selectionsInColumn, selection.children.selected.value).map(opt =>
+                    (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))
+                }
+                </select>
+            </div>
+            <div className="col-4">
+                <input type="text"  autoComplete="off" className={selection.children.amount.errorAfterBlur ? 'is-invalid form-control' : 'form-control'}
+                    {...propsForComponent(selection.children.amount)}
+                    onBlur={(evt) => {propsForComponent(selection.children.amount).onBlur(evt); updatePrice(selection);}}
+                    placeholder="Enter amount"/>
+                {selection.children.amount.errorAfterBlur && <div className="invalid-feedback">{selection.children.amount.message}</div>}
+            </div>
+            <div className="col-3">
+                {selection.children.price.value} €
+            </div>
+            <div className="col-1">
+                <a href="#" onClick={remove}><i className="text-dark fa fa-trash-o"/></a>
+            </div>
+        </div>
+    </div>)
+
+const Column = ({formModel, propsForComponent, comboBoxValues} :
+    {formModel: ReturnType<typeof forColumn>,
+        propsForComponent: TPropsForComponent,
+        comboBoxValues: IComboBoxValue[],
+    }) => (<div className="col-4">
+            <div className="card">
+            {formModel.children.selections.children.map((formControlMap, idx) => {
+                return <SingleSelection key={idx}
+                        comboBoxValues={comboBoxValues}
+                        propsForComponent = {propsForComponent}
+                        selectionsInColumn = {formModel.children.selections.value}
+                        remove = {() => formModel.children.selections.remove(idx)}
+                        selection = {formControlMap}
+                    />
+            }
+            )}
+            { formModel.children.selections.children.length < comboBoxValues.length ?
+                (<div className="col-1 pb-3 pt-3">
+                    <a href="#" onClick={() =>
+                        formModel.children.selections.add(
+                           {selected: allowedSelections(comboBoxValues, formModel.children.selections.value, undefined)[0].value,
+                            amount: '15',
+                            price: null})
+                    }><i className="text-dark fa fa-plus"/></a>
+                </div>) : null
+            }
+        </div>
+    </div>);
+
+
+
+
+class Complex extends React.Component<IProps, {}> {
+    render() {
+        let initialData = this.props.complex;
+        let comboBoxValues = this.props.comboBoxValues;
+        let formModel = new FormControlArray((sel:ISelectionData) => forColumn(sel));
+
+        return (<div>
+            <FormModel
+                formModel = { formModel }
+                initialValues = {initialData}
+                render = { (props) => {
+                    {console.log("render form ", props);}
+                    return (<div className="row justify-content-center m-4">
+                        {props.formModel.children.map((col, idx) => (
+                        <Column
+                            formModel = {col}
+                            comboBoxValues = {comboBoxValues}
+                            propsForComponent = {props.propsForComponent}
+                            key={idx}/>
+                        ))}
+                    </div>
+                )}}
+            />
+            </div>);
+    }
+}
 
 const mapStateToProps = (state: any, props: any) => {
     console.log("Detail Component mapStateToProps", state, props);

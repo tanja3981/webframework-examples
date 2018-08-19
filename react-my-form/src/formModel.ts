@@ -2,8 +2,11 @@ import {IValidator, alwaysTrue} from './validators';
 
 type IFormControlParent = FormControlMap<any>|FormControlArray<any>;
 
+function noop() {}
+
 export interface IFormControlState<T> {
     parent: IFormControlParent;
+    rootNotifyOnStateChange: () => void;
     dirty: boolean;
     touched: boolean;
     invalid: boolean;
@@ -36,8 +39,10 @@ export type TFormControlMap<T> = {[K in keyof T]:  IFormControlState<TTypeFromIF
 
 export class FormControlMap<T extends TFormControlMap<T>> implements IFormControlState<TTypeFromIFormControlState<T>> {
     private _message: string;
+    public rootNotifyOnStateChange: () => void = noop;
+    public parent: IFormControlParent = null;
 
-    constructor(public children: T, private validator: IValidator<TTypeFromIFormControlState<T>> = alwaysTrue, public parent: IFormControlParent|null = null) {
+    constructor(public children: T, private validator: IValidator<TTypeFromIFormControlState<T>> = alwaysTrue) {
         for (let key in children) {
             children[key].parent = this;
         }
@@ -88,6 +93,10 @@ export class FormControlMap<T extends TFormControlMap<T>> implements IFormContro
     updateState() {
         this._message = this.validator(this.value);
         if (this.parent) this.parent.updateState();
+        else {
+            console.log("### ROOT. Notify change", this.rootNotifyOnStateChange);
+            this.rootNotifyOnStateChange();
+        }
     }
 }
 
@@ -97,9 +106,11 @@ export class FormControlMap<T extends TFormControlMap<T>> implements IFormContro
 // export class FormControlMap<T extends TFormControlMap<T>> implements IFormControlState<TTypeFromIFormControlState<T>> {
     // constructor(public children: T, private validator: IValidator<TTypeFromIFormControlState<T>> = alwaysTrue, public parent: IFormControlParent|null = null) {
 export class FormControlArray<T extends IFormControlState<TTypeFromIFormControlState<T>>, U=any> implements IFormControlState<TTypeFromIFormControlState<T>[]> {
-    private children: Array<T> = [];
+    private _children: Array<T> = [];
     private _message: string;
     public parent: IFormControlParent;
+    public rootNotifyOnStateChange: () => void = noop;
+
    constructor(private childConstructor: (initialValue:U) => T, private validator: IValidator<TTypeFromIFormControlState<T>[]> = alwaysTrue, private initialValues: U[] = undefined)  {
             if (initialValues) {
             for (let val of initialValues) {
@@ -111,14 +122,18 @@ export class FormControlArray<T extends IFormControlState<TTypeFromIFormControlS
     add(value: U = undefined): T {
         let child = this.childConstructor(value);
         child.parent = this;
-        this.children.push(child);
+        this._children.push(child);
         this.updateState();
         return child;
     }
 
     remove(index: number) {
-        this.children.splice(index, 1);
+        this._children.splice(index, 1);
         this.updateState();
+    }
+
+    get children(): Array<T> {
+        return new Array(...this._children);
     }
 
     getChildren()  {
@@ -126,21 +141,21 @@ export class FormControlArray<T extends IFormControlState<TTypeFromIFormControlS
     }
 
     get value(): TTypeFromIFormControlState<T>[] {
-        let ret = this.children.map(c => c.value);
+        let ret = this._children.map(c => c.value);
         return ret;
     }
 
 
     get dirty(): boolean {
-        return this.children.some(child => child.dirty);
+        return this._children.some(child => child.dirty);
     }
 
     get touched(): boolean {
-        return this.children.some(child => child.touched);
+        return this._children.some(child => child.touched);
     }
 
     get invalid(): boolean {
-        return !!this._message || this.children.some(child => child.invalid);
+        return !!this._message || this._children.some(child => child.invalid);
     }
 
     get message(): string {
@@ -150,6 +165,10 @@ export class FormControlArray<T extends IFormControlState<TTypeFromIFormControlS
     updateState() {
         this._message = this.validator(this.value);
         if (this.parent) this.parent.updateState();
+        else {
+            console.log("### ROOT. Notify change", this.rootNotifyOnStateChange);
+            this.rootNotifyOnStateChange();
+        }
     }
 }
 
@@ -157,6 +176,8 @@ export class FormControlValue<T> implements IFormControlState<T> {
     public message: string = undefined;
     public parent: IFormControlParent;
     public initialValue: T;
+    public rootNotifyOnStateChange: () => void = noop;
+
     constructor(private validator: IValidator<T> = alwaysTrue, private _value: T = undefined, public dirty: boolean = false, public touched: boolean =false,
             public invalid: boolean = false)  {
                 this.initialValue = _value;
@@ -183,6 +204,10 @@ export class FormControlValue<T> implements IFormControlState<T> {
         this.message = this.validator(this.value);
         this.invalid = !!this.message;
         if (this.parent) this.parent.updateState();
+        else {
+            console.log("### ROOT. Notify change", this.rootNotifyOnStateChange);
+            this.rootNotifyOnStateChange();
+        }
     }
 }
 
@@ -196,25 +221,31 @@ export function updateAllControlState(parent: IFormControlState<any>) {
     }
 }
 
-export function fillFromJSON(control: IFormControlState<any>, object: any): void {
+export function fillFromJSON(control: IFormControlState<any>, object: any, rootNotifyOnStateChange: () => void = noop): void {
+    fillFromJSON_rec(control, object);
+    control.rootNotifyOnStateChange = rootNotifyOnStateChange;
+    console.log("done", control, object);
+}
+export function fillFromJSON_rec(control: IFormControlState<any>, object: any): void {
     if (Array.isArray(object)) {
         if (control instanceof FormControlArray) {
             object.forEach(c => {
-                let child = control.add();
-                fillFromJSON(child, c);
+                console.log("add child ",c, control, object);
+                let child = control.add(c);
+                fillFromJSON_rec(child, c);
             });
         } else {
             console.log('array value, but control is not a FormControlArray ', object);
         }
-    } else if (typeof object === 'object') {
+    } else if (object!=null && typeof object === 'object') {
         if (control instanceof FormControlMap) {
             for (let key in object) {
                 let childControl = control.children[key];
                 if (!childControl) console.log("child ",key," component not found on ", control);
-                fillFromJSON(childControl, object[key]);
+                fillFromJSON_rec(childControl, object[key]);
             }
         } else {
-            console.log('object value, but control is not a FormControlValue ', object);
+            console.log('object value, but control is not a FormControlValue ', control, object);
         }
     } else {
         if (control instanceof FormControlValue) {

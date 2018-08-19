@@ -19,15 +19,22 @@ export interface IProps<M extends IFormControlState<T>, T> {
     render: (props: RenderProps<M, T>) => JSX.Element;
 }
 
+export type TPropsForComponent = (comp: IFormControlState<any>) => ComponentProps<any>;
+
 export default class FormModel<M extends IFormControlState<T>, T> extends React.Component< IProps<M, T>, { formModel: M }> {
     constructor(props: IProps<M, T>) {
         super(props);
         this.state = {formModel : props.formModel};
         if (props.initialValues) {
             fillFromJSON(this.state.formModel, props.initialValues);
+            this.state.formModel.rootNotifyOnStateChange = this.rootNotifyOnStateChange;
         }
     }
-    propsForComponent = (comp: IFormControlState<any>): ComponentProps<any>  => {
+    rootNotifyOnStateChange = () => {
+        console.log("*** Force update");
+        this.forceUpdate();
+    }
+    propsForComponent: TPropsForComponent = (comp: IFormControlState<any>) => {
         return {
             onChange: this.onChange(comp),
             onBlur: this.onBlur(comp),
@@ -37,13 +44,11 @@ export default class FormModel<M extends IFormControlState<T>, T> extends React.
     onChange = (comp: IFormControlState<any>) => (evt: React.ChangeEvent<HTMLInputElement>) => {
         console.log("handle change event ", evt, "for ", comp);
         comp.value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
-        this.forceUpdate();
     }
     onBlur = (comp: IFormControlState<any>) => (evt: React.ChangeEvent<HTMLInputElement>) => {
         console.log("handle blur event ", evt, "for ", comp);
         comp.value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
         comp.touched = true;
-        this.forceUpdate();
     }
     render(): JSX.Element {
         let renderProps : RenderProps<M, T> = {
