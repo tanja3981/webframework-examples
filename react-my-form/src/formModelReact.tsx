@@ -36,16 +36,17 @@ export default class FormModel<M extends IFormControlState<T>, T> extends React.
     }
     onChange = (comp: IFormControlState<any>) => (evt: React.ChangeEvent<HTMLInputElement>) => {
         console.log("handle change event ", evt, "for ", comp);
-        comp.value = evt.target.value;
+        comp.value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
         this.forceUpdate();
     }
     onBlur = (comp: IFormControlState<any>) => (evt: React.ChangeEvent<HTMLInputElement>) => {
         console.log("handle blur event ", evt, "for ", comp);
-        comp.value = evt.target.value;
+        comp.value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
+        comp.touched = true;
         this.forceUpdate();
     }
     render(): JSX.Element {
-        let renderProps : RenderProps<any, any> = {
+        let renderProps : RenderProps<M, T> = {
             value: this.state.formModel.value,
             formModel: this.state.formModel,
             propsForComponent: this.propsForComponent
@@ -53,3 +54,12 @@ export default class FormModel<M extends IFormControlState<T>, T> extends React.
         return (<form>{this.props.render(renderProps)}</form>);
     }
 }
+
+export const ComponentState = ({control} : {control: IFormControlState<any>}) => (
+    <div>
+        dirty: {JSON.stringify(control.dirty)}
+        , touched: {JSON.stringify(control.touched)}
+        , invalid: {JSON.stringify(control.invalid)}
+        , value: {JSON.stringify(control.value)}
+    </div>
+)

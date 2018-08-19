@@ -5,7 +5,7 @@ import {alwaysTrue, required, minLength, maxLength, pattern, email, composeValid
 import {IProfileData} from './types'
 import MyForm from './MyForm'
 import {updateAllControlState, IFormControlState, FormControlValue, FormControlMap, FormControlArray, fillFromJSON} from './formModel';
-import FormModel, {ComponentProps} from './formModelReact';
+import FormModel, {ComponentProps, ComponentState} from './formModelReact';
 
 
 interface IPageData {
@@ -48,13 +48,14 @@ const initalValue : IProfileData = {
     phone: '123'
 };
 
-class Profile extends React.Component<{}, {}> {
+class Profile extends React.Component<{readonly: boolean}, {}> {
 
-    constructor(props: {}) {
+    constructor(props: {readonly: boolean}) {
         super(props);
     }
 
     render() {
+        let readonly = this.props.readonly;
         return (<div>
             <FormModel
                 formModel = {
@@ -63,33 +64,45 @@ class Profile extends React.Component<{}, {}> {
                         email: new FormControlValue(validateEMail),
                         allowPhone: new FormControlValue<boolean>(),
                         phone: new FormControlValue(validatePhonenumber)
-                    }) as FormControlMap<IProfileData>
+                    })
                 }
                 initialValues = {initalValue}
                 render = { (props) => {
                     console.log("render",props);
-                    // let {propsForComponent, formModel} : {IFormControlState<IProfileData>, FormControlMap<IProfileData>} = props;
-                    let propsForComponent = props.propsForComponent;
-                    let formModel: FormControlMap<IProfileData> = props.formModel as FormControlMap<IProfileData>;
-                    let nameChild = formModel.children.name;
-                    let nameProps = propsForComponent(nameChild);
-                    let emailChild = formModel.children.email;
-                    let emailProps = propsForComponent(emailChild);
-                    // {...propsForComponent(nameChild)}
-                    return (<><div className='form-group'>
-                            <label htmlFor="name">Name</label>
-                            <input type="text" className={(nameChild.invalid? 'is-invalid' : '') + ' form-control'}
-                            onChange={nameProps.onChange} onBlur={nameProps.onBlur} value={nameProps.value}
-                            name="profile.name" placeholder="Enter name"/>
-                        {nameChild.invalid && <div className="invalid-feedback">{(nameChild as FormControlValue<string>).message}</div>}
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="email">E-mail</label>
-                            <input type="text" className={(emailChild.invalid ? 'is-invalid' : '') + ' form-control'}
-                                onChange={emailProps.onChange} onBlur={emailProps.onBlur} value={emailProps.value}
-                                name="profile.email" placeholder="Enter e-mail" />
-                            {emailChild.invalid && <div className="invalid-feedback">{(emailChild as FormControlValue<string>).message}</div>}
-                        </div>
+                    let {propsForComponent, formModel} = props;
+                    let c = formModel.children;
+                    return (<>
+                            <div className="form-group">
+                                <label htmlFor="name">Name</label>
+                                <input type="text" className={(c.name.errorOnEdit ? 'is-invalid' : '') + ' form-control'}
+                                    {...propsForComponent(c.name)}
+                                    name="name" placeholder="Enter name" disabled={readonly}/>
+                                {c.name.errorOnEdit && <div className="invalid-feedback">{c.name.message}</div>}
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="email">E-mail</label>
+                                <input type="text" className={(c.email.errorOnEdit ? 'is-invalid' : '') + ' form-control'}
+                                    {...propsForComponent(c.email)}
+                                    name="email" placeholder="Enter e-mail" disabled={readonly}/>
+                                {c.email.errorOnEdit && <div className="invalid-feedback">{c.email.message}</div>}
+                            </div>
+                            <div className="form-check">
+                                <input className="form-check-input" name="allowPhone" id="allowPhone" type="checkbox"
+                                    {...propsForComponent(c.allowPhone)}
+                                    checked={c.allowPhone.value}
+                                    disabled={readonly}/>
+                                <label className="form-check-label" htmlFor="allowPhone">
+                                    Allow phone calls
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="phone">Phone number</label>
+                                <input type="text" className={(c.allowPhone.value && c.phone.errorOnEdit ? 'is-invalid' : '') + ' form-control'}
+                                    {...propsForComponent(c.phone)}
+                                    name="phone" placeholder="Enter phone" disabled={readonly || !c.allowPhone.value}/>
+                                {c.allowPhone.value && c.phone.errorOnEdit && <div className="invalid-feedback">{c.phone.message}</div>}
+                            </div>
+                            {JSON.stringify(formModel.value)}
                         </>);
                     }
                 }

@@ -1,34 +1,50 @@
 import {IValidator, alwaysTrue} from './validators';
 
-type IFormControlParent<T> = FormControlMap<T>|FormControlArray<T>;
+type IFormControlParent = FormControlMap<any>|FormControlArray<any>;
 
 export interface IFormControlState<T> {
-    parent: IFormControlParent<any>;
+    parent: IFormControlParent;
     dirty: boolean;
     touched: boolean;
     invalid: boolean;
     value: T;
+    // FIXME getChildren makes only sense for array, for nothing else + typing is bad
     getChildren(): IFormControlState<any>[];
     updateState(): void;
 }
 
 // K: IFormControlState<T>
 
-export type IFormControlStateMap<T> = {[K in keyof T]?: IFormControlState<T[K]>};
+//export type IFormControlStateMap<T> = {[K in keyof T]?: IFormControlState<T[K]>};
+// export type IValueFromtateMap<T> = {[K in keyof T]?: T[K]};
 
-export class FormControlMap<T> implements IFormControlState<IFormControlStateMap<T>> {
-    public children: IFormControlStateMap<T> = {};
+// D = {
+//     name: string,
+//     email: string
+// }
+
+// C = {
+//     name: FormControlValue<string>(),
+//     email: FormControlValue<string>()
+// }
+
+export type TTypeFromIFormControlState<T> = T extends IFormControlState<(infer U)> ? U : {[K in keyof T]: TTypeFromIFormControlState<T[K]>};
+
+export type TTypeStructureFromControlStateMap<M> = {[K in keyof M]: TTypeFromIFormControlState<M[K]>};
+
+export type TFormControlMap<T> = {[K in keyof T]:  IFormControlState<TTypeFromIFormControlState<T[K]>> }
+
+export class FormControlMap<T extends TFormControlMap<T>> implements IFormControlState<TTypeFromIFormControlState<T>> {
     private _message: string;
 
-    constructor(object: IFormControlStateMap<T>, private validator: IValidator<T> = alwaysTrue, public parent: IFormControlParent<T>|null = null) {
-        for (let key in object) {
-            this.children[key] = object[key];
-            object[key].parent = this;
+    constructor(public children: T, private validator: IValidator<TTypeFromIFormControlState<T>> = alwaysTrue, public parent: IFormControlParent|null = null) {
+        for (let key in children) {
+            children[key].parent = this;
         }
     }
 
     // FIXME: Typing
-    set(key: any, child: IFormControlState<IFormControlStateMap<T>>) {
+    set(key: any, child: IFormControlState<any>) {
         child.parent = this;
         this.children[key] = child;
     }
@@ -61,12 +77,12 @@ export class FormControlMap<T> implements IFormControlState<IFormControlStateMap
         return this._message;
     }
 
-    get value(): T {
+    get value(): TTypeFromIFormControlState<T> {
         let r : any = {};
         for (let key in this.children) {
             r[key] = this.children[key].value;
         }
-        return r;
+        return r as TTypeFromIFormControlState<T>;
     }
 
     updateState() {
@@ -75,19 +91,24 @@ export class FormControlMap<T> implements IFormControlState<IFormControlStateMap
     }
 }
 
-export class FormControlArray<T> implements IFormControlState<T[]> {
-    private children: Array<IFormControlState<T>> = [];
+// export type TTypeFromIFormControlState<T> = T extends IFormControlState<(infer U)> ? U : {[K in keyof T]: TTypeFromIFormControlState<T[K]>};
+// export type TTypeStructureFromControlStateMap<M> = {[K in keyof M]: TTypeFromIFormControlState<M[K]>};
+// export type TFormControlMap<T> = {[K in keyof T]:  IFormControlState<TTypeFromIFormControlState<T[K]>> }
+// export class FormControlMap<T extends TFormControlMap<T>> implements IFormControlState<TTypeFromIFormControlState<T>> {
+    // constructor(public children: T, private validator: IValidator<TTypeFromIFormControlState<T>> = alwaysTrue, public parent: IFormControlParent|null = null) {
+export class FormControlArray<T extends IFormControlState<TTypeFromIFormControlState<T>>, U=any> implements IFormControlState<TTypeFromIFormControlState<T>[]> {
+    private children: Array<T> = [];
     private _message: string;
-    public parent: IFormControlParent<any>;
-    constructor(private childConstructor: (initialValue:T) => IFormControlState<T>, private validator: IValidator<T[]> = alwaysTrue, private initialValues: T[] = undefined)  {
-        if (initialValues) {
+    public parent: IFormControlParent;
+   constructor(private childConstructor: (initialValue:U) => T, private validator: IValidator<TTypeFromIFormControlState<T>[]> = alwaysTrue, private initialValues: U[] = undefined)  {
+            if (initialValues) {
             for (let val of initialValues) {
                 this.add(val);
             }
         }
     }
 
-    add(value: T = undefined): IFormControlState<T> {
+    add(value: U = undefined): T {
         let child = this.childConstructor(value);
         child.parent = this;
         this.children.push(child);
@@ -100,12 +121,13 @@ export class FormControlArray<T> implements IFormControlState<T[]> {
         this.updateState();
     }
 
-    getChildren() {
+    getChildren()  {
         return this.children;
     }
 
-    get value(): T[] {
-        return this.children.map(c => c.value);
+    get value(): TTypeFromIFormControlState<T>[] {
+        let ret = this.children.map(c => c.value);
+        return ret;
     }
 
 
@@ -133,9 +155,11 @@ export class FormControlArray<T> implements IFormControlState<T[]> {
 
 export class FormControlValue<T> implements IFormControlState<T> {
     public message: string = undefined;
-    public parent: IFormControlParent<T>;
+    public parent: IFormControlParent;
+    public initialValue: T;
     constructor(private validator: IValidator<T> = alwaysTrue, private _value: T = undefined, public dirty: boolean = false, public touched: boolean =false,
             public invalid: boolean = false)  {
+                this.initialValue = _value;
     }
 
     get value() { return this._value};
@@ -144,10 +168,17 @@ export class FormControlValue<T> implements IFormControlState<T> {
         return [];
     }
 
+    get errorAfterBlur(): boolean {
+        return this.invalid && this.touched;
+    }
+    get errorOnEdit(): boolean {
+        return this.invalid && (this.dirty || this.touched);
+    }
+
     updateState(updateTouchedAndDirty=true) {
         if (updateTouchedAndDirty) {
-            this.touched = true;
-            this.dirty = true;
+            console.log("update dirty", this._value, this.initialValue);
+            this.dirty = this._value !== this.initialValue;
         }
         this.message = this.validator(this.value);
         this.invalid = !!this.message;
@@ -167,29 +198,31 @@ export function updateAllControlState(parent: IFormControlState<any>) {
 
 export function fillFromJSON(control: IFormControlState<any>, object: any): void {
     if (Array.isArray(object)) {
-        if (control instanceof FormControlArray === false) {
-            console.log('array value, but control is not a FormControlArray ', object);
-        } else {
+        if (control instanceof FormControlArray) {
             object.forEach(c => {
-                let child = (control as FormControlArray<any>).add();
+                let child = control.add();
                 fillFromJSON(child, c);
             });
+        } else {
+            console.log('array value, but control is not a FormControlArray ', object);
         }
     } else if (typeof object === 'object') {
-        if (control instanceof FormControlMap === false) {
-            console.log('object value, but control is not a FormControlValue ', object);
-        } else {
+        if (control instanceof FormControlMap) {
             for (let key in object) {
-                let childControl = (control as FormControlMap<any>).children[key];
+                let childControl = control.children[key];
                 if (!childControl) console.log("child ",key," component not found on ", control);
                 fillFromJSON(childControl, object[key]);
             }
+        } else {
+            console.log('object value, but control is not a FormControlValue ', object);
         }
     } else {
-        if (control instanceof FormControlValue === false) {
-            console.log('primitive value, but control is not a FormControlValue ', object);
+        if (control instanceof FormControlValue) {
+            control.value = object;
+            control.initialValue = object;
+            control.dirty = false;
         } else {
-            (control as FormControlValue<{}>).value = object;
+            console.log('primitive value, but control is not a FormControlValue ', object);
         }
     }
 }
