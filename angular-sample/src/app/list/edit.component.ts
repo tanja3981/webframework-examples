@@ -22,7 +22,7 @@ export class ListEditComponent {
             if (params['id']) {
                 const v = comboBoxValues.filter(c => c.value === params['id']);
                 if (v.length === 1) {
-                    this.value = JSON.parse(JSON.stringify(v[0]);
+                    this.value = JSON.parse(JSON.stringify(v[0]));
                     this.id = this.value.value;
                     // this.id = v[0].value;
                     // this.form = new FormGroup({
