@@ -1,8 +1,8 @@
-export type IValidator<T> = (value:T) => string|undefined;
+export type IValidator<T, O = any> = (value:T, object: O) => string|undefined;
 
-type ICurriedValidator<T> = (message:string) => IValidator<T>;
+type ICurriedValidator<T, O = any> = (message:string) => IValidator<T, O>;
 
-type IParamterizedCurriedValidator<T> = (param:any) => ICurriedValidator<T>;
+type IParamterizedCurriedValidator<T, O = any> = (param:any) => ICurriedValidator<T>;
 
 export const alwaysTrue: IValidator<any> = (value:any) => undefined;
 export const required: ICurriedValidator<string> = (message:string) => (value:string) => (value ? undefined : message);
@@ -16,8 +16,9 @@ export const min: IParamterizedCurriedValidator<string> = (minValue: number) => 
 export const max: IParamterizedCurriedValidator<string> = (maxValue: number) => (message:string) => (value:string) => (Number(value)>maxValue ? message : undefined);
 
 
-export const composeValidators = (...validators: IValidator<string>[]) : IValidator<string> => (value:string) =>
-  validators.reduce((error: string, validator: IValidator<string>) => error || validator(value), undefined);
+export function composeValidators<O = any>(...validators: IValidator<string>[]) : IValidator<string> {
+    return (value:string, object: O) => validators.reduce((error: string, validator: IValidator<string>) => error || validator(value, object), undefined);
+}
 
 export function elminateUndefined(obj:any) {
     let r = {};

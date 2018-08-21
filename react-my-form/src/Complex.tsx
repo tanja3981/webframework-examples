@@ -1,17 +1,9 @@
 import * as React from 'react';
 import {required, numeric, min, max, composeValidators, alwaysTrue} from './validators';
-import {ISelectionData, IColumnSelection} from './types';
+import {ISelectionData, IColumnSelection, IComboBoxValue} from './types';
 import { connect } from 'react-redux';
 import FormModel, {ComponentProps, ComponentState, TPropsForComponent} from './formModelReact';
 import { FormControlMap, FormControlValue, FormControlArray } from './formModel';
-
-interface IComboBoxValue {
-    label: string,
-    value: string,
-    minValue: number,
-    maxValue: number,
-    step: number
-}
 
 export function allowedSelections(comboBoxValues: IComboBoxValue[], columnSelections: IColumnSelection[], selected: string|undefined) {
     let forbidden = columnSelections.map(s => s.selected).filter(v => v !== selected);
@@ -39,14 +31,14 @@ interface IProps {
 let forSelection = (selection: IColumnSelection) => {
     console.log('*forSelection', selection);
     return new FormControlMap({
-    selected: new FormControlValue<string>(alwaysTrue, selection.selected),
-    amount: new FormControlValue<string>(alwaysTrue, selection.amount),
-    price: new FormControlValue<number|null>(alwaysTrue, null)
+    selected: new FormControlValue<string>({value: selection.selected}),
+    amount: new FormControlValue<string>({value: selection.amount}),
+    price: new FormControlValue<number|null>({value: null})
 })};
 
 let forSelectionsInColumn = (selections: IColumnSelection[]) => {
     console.log("*forSelectionsInColumn", selections);
-    return new FormControlArray(forSelection, alwaysTrue);
+    return new FormControlArray(forSelection, {values: selections});
 }
 
 let forColumn = (selectionData: ISelectionData) => {
@@ -56,14 +48,11 @@ let forColumn = (selectionData: ISelectionData) => {
 }
 
 
-// onChange={(evt) => {handleChange(evt); updatePrice(setFieldValue, evt.target.value, values.columns[cIdx].selections[sIdx].amount, cIdx, sIdx, errors);}} onBlur={handleBlur}>
-// value={values.columns[cIdx].selections[sIdx].amount} onChange={(evt) => {handleChange(evt);}} onBlur={(evt) => {handleBlur(evt); updatePrice(setFieldValue, values.columns[cIdx].selections[sIdx].selected, values.columns[cIdx].selections[sIdx].amount, cIdx, sIdx, errors);}}
-// evt.preventDefault(); s..remove(sIdx)}
 const SingleSelection = ({selection, propsForComponent, comboBoxValues, remove, selectionsInColumn} :
     {selection: ReturnType<typeof forSelection>,
         propsForComponent: TPropsForComponent,
         comboBoxValues: IComboBoxValue[],
-        remove: () =>void,
+        remove: (evt: React.SyntheticEvent) =>void,
         selectionsInColumn: IColumnSelection[]
     }) => (
         <div className="card-body">
@@ -83,11 +72,11 @@ const SingleSelection = ({selection, propsForComponent, comboBoxValues, remove, 
                 </select>
             </div>
             <div className="col-4">
-                <input type="text"  autoComplete="off" className={selection.children.amount.errorAfterBlur ? 'is-invalid form-control' : 'form-control'}
+                <input type="text"  autoComplete="off" className={selection.children.amount.invalid ? 'is-invalid form-control' : 'form-control'}
                     {...propsForComponent(selection.children.amount)}
                     onBlur={(evt) => {propsForComponent(selection.children.amount).onBlur(evt); updatePrice(selection);}}
                     placeholder="Enter amount"/>
-                {selection.children.amount.errorAfterBlur && <div className="invalid-feedback">{selection.children.amount.message}</div>}
+                {selection.children.amount.invalid && <div className="invalid-feedback">{selection.children.amount.message}</div>}
             </div>
             <div className="col-3">
                 {selection.children.price.value} €
@@ -109,39 +98,48 @@ const Column = ({formModel, propsForComponent, comboBoxValues} :
                         comboBoxValues={comboBoxValues}
                         propsForComponent = {propsForComponent}
                         selectionsInColumn = {formModel.children.selections.value}
-                        remove = {() => formModel.children.selections.remove(idx)}
+                        remove = {(evt) => {evt.preventDefault(); formModel.children.selections.remove(idx)}}
                         selection = {formControlMap}
                     />
             }
             )}
             { formModel.children.selections.children.length < comboBoxValues.length ?
                 (<div className="col-1 pb-3 pt-3">
-                    <a href="#" onClick={() =>
-                        formModel.children.selections.add(
+                    <a href="#" onClick={(evt) =>
+                        {   evt.preventDefault();
+                            formModel.children.selections.add(
                            {selected: allowedSelections(comboBoxValues, formModel.children.selections.value, undefined)[0].value,
                             amount: '15',
-                            price: null})
+                            price: null})}
                     }><i className="text-dark fa fa-plus"/></a>
                 </div>) : null
             }
         </div>
     </div>);
 
-
-
+function createFormModel(complex: ISelectionData[]) {
+    return new FormControlArray((sel:ISelectionData) => forColumn(sel),
+        {values: complex}
+    );
+}
 
 class Complex extends React.Component<IProps, {}> {
+    private formModel : ReturnType<typeof createFormModel>;
+
+    constructor(props: IProps) {
+        super(props);
+        this.formModel = createFormModel(this.props.complex);
+    }
+
     render() {
-        let initialData = this.props.complex;
         let comboBoxValues = this.props.comboBoxValues;
-        let formModel = new FormControlArray((sel:ISelectionData) => forColumn(sel));
+        let formModel = this.formModel;
 
         return (<div>
             <FormModel
                 formModel = { formModel }
-                initialValues = {initialData}
                 render = { (props) => {
-                    {console.log("render form ", props);}
+                    {/*console.log("render form ", props);*/}
                     return (<div className="row justify-content-center m-4">
                         {props.formModel.children.map((col, idx) => (
                         <Column

@@ -41,7 +41,7 @@ const initialComplexState : ISelectionData[] = [
 function profile(state = initialProfileState, action: IAction) {
     switch (action.type) {
       case actions.PROFILE_SAVE:
-        return state;
+        return (action as any).profile;
       default:
         return state;
     }

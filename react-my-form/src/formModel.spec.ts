@@ -1,4 +1,4 @@
-import {TTypeFromIFormControlState, TTypeStructureFromControlStateMap, updateAllControlState, FormControlValue, FormControlMap, FormControlArray, IFormControlState, TFormControlMap} from './formModel';
+import {TTypeFromIFormControlState, TTypeStructureFromControlStateMap, validateChildren, FormControlValue, FormControlMap, FormControlArray, IFormControlState, TFormControlMap} from './formModel';
 import {IValidator, required, numeric, min, max, composeValidators, minLength, alwaysTrue} from './validators';
 
 type TCheck<V, T> = V extends T ? T extends V ? true : never : never;
@@ -11,31 +11,47 @@ describe("For a formModel ", function() {
     });
 
     it("set value updates the state for a ControlValue", function() {
-        let f = new FormControlValue(minLength(2)('must be at least 2 chars'));
-        f.value = 'abc';
-        f.value = 'defg';
+        let f = new FormControlValue({validator: minLength(2)('must be at least 2 chars')});
+        f.updateValue('defg', true);
         expect(f.dirty).toBe(true);
-        expect(f.touched).toBe(false);
+        expect(f.touched).toBe(true);
         expect(f.invalid).toBe(false);
 
-        f.value = '1';
+        f.updateValue('1', true);
         expect(f.dirty).toBe(true);
-        expect(f.touched).toBe(false);
+        expect(f.touched).toBe(true);
         expect(f.invalid).toBe(true);
 
-        f.value = '12';
+        f.updateValue('12', true);
+        expect(f.dirty).toBe(true);
+        expect(f.touched).toBe(true);
+        expect(f.invalid).toBe(false);
+    });
+
+    it("validation on change can be deffered", function() {
+        let f = new FormControlValue({value:'', validator: minLength(2)('must be at least 2 chars'), validateOnBlur: true});
+        expect(f.dirty).toBe(false);
+        expect(f.touched).toBe(false);
+        expect(f.invalid).toBe(false);
+
+        f.updateValue('1', false);
         expect(f.dirty).toBe(true);
         expect(f.touched).toBe(false);
         expect(f.invalid).toBe(false);
+
+        f.updateValue('1', true);
+        expect(f.dirty).toBe(true);
+        expect(f.touched).toBe(true);
+        expect(f.invalid).toBe(true);
     });
 
     it("set value updates the state for its parent map", function() {
         let map = new FormControlMap({
-            name: new FormControlValue(required('name must be specified')),
+            name: new FormControlValue({validator: required('name must be specified')}),
         });
 
         let name = map.children.name;
-        updateAllControlState(map);
+        validateChildren(map);
 
         expect(name.dirty).toBe(false);
         expect(name.touched).toBe(false);
@@ -45,14 +61,14 @@ describe("For a formModel ", function() {
         expect(map.touched).toBe(false);
         expect(map.invalid).toBe(true);
 
-        name.value = 'abc';
+        name.updateValue('abc', true);
 
         expect(name.dirty).toBe(true);
-        expect(name.touched).toBe(false);
+        expect(name.touched).toBe(true);
         expect(name.invalid).toBe(false);
 
         expect(map.dirty).toBe(true);
-        expect(map.touched).toBe(false);
+        expect(map.touched).toBe(true);
         expect(map.invalid).toBe(false);
     });
 
@@ -63,25 +79,25 @@ describe("For a formModel ", function() {
                 return val == 'evil' ?  'is evil' : undefined;
             };
         let map = new FormControlMap({
-            name: new FormControlValue(required('name must be specified')),
-        }, validator);
+            name: new FormControlValue({validator: required('name must be specified')}),
+        }, {validator});
 
         let name = map.children.name;
-        name.value = 'evil';
+        name.updateValue('evil', true);
 
         expect(name.dirty).toBe(true);
-        expect(name.touched).toBe(false);
+        expect(name.touched).toBe(true);
         expect(name.invalid).toBe(false);
 
         expect(map.dirty).toBe(true);
-        expect(map.touched).toBe(false);
+        expect(map.touched).toBe(true);
         expect(map.invalid).toBe(true);
     });
 
     it("set value updates the state for its parent array", function() {
-        let array = new FormControlArray(() => new FormControlValue(required('name must be specified')), alwaysTrue, ['']);
+        let array = new FormControlArray(() => new FormControlValue({validator: required('name must be specified')}), {values: ['']} );
         let name = array.getChildren()[0];
-        updateAllControlState(array);
+        validateChildren(array);
 
         expect(name.dirty).toBe(false);
         expect(name.touched).toBe(false);
@@ -91,27 +107,26 @@ describe("For a formModel ", function() {
         expect(array.touched).toBe(false);
         expect(array.invalid).toBe(true);
 
-        name.value = 'abc';
+        name.updateValue('abc', true);
 
         expect(name.dirty).toBe(true);
-        expect(name.touched).toBe(false);
+        expect(name.touched).toBe(true);
         expect(name.invalid).toBe(false);
 
         expect(array.dirty).toBe(true);
-        expect(array.touched).toBe(false);
+        expect(array.touched).toBe(true);
         expect(array.invalid).toBe(false);
     });
 
     it("set value updates the state for its parent array with children validation", function() {
         let validator : IValidator<string[]> =
             (array: Array<string>) => {
-                console.log('validate', array.length);
                 return array.length < 2 ?  'too small' : undefined;
             };
-        let array = new FormControlArray((initialValue) => new FormControlValue<string>(required('name must be specified'), initialValue), validator);
+        let array = new FormControlArray((initialValue) => new FormControlValue<string>({validator: required('name must be specified'), value: initialValue}), {validator});
 
         let name1 = array.add('abc');
-        updateAllControlState(array);
+        validateChildren(array);
 
         expect(name1.dirty).toBe(false);
         expect(name1.touched).toBe(false);
@@ -165,10 +180,10 @@ describe("For a formModel ", function() {
         };
 
         let map = {
-            string: new FormControlValue<string>(alwaysTrue),
-            number: new FormControlValue<number>(alwaysTrue),
+            string: new FormControlValue<string>({validator: alwaysTrue}),
+            number: new FormControlValue<number>({validator: alwaysTrue}),
             nested: new FormControlMap({
-                    boolean: new FormControlValue<boolean>(alwaysTrue)
+                    boolean: new FormControlValue<boolean>({validator: alwaysTrue})
             })
         };
 
@@ -196,8 +211,8 @@ describe("For a formModel ", function() {
     });
 
     it('type inference works works for FormControlValue', function() {
-        let name: FormControlValue<string> = new FormControlValue(alwaysTrue, 'abc');
-        let check: FormControlValue<boolean> = new FormControlValue(alwaysTrue, true);
+        let name: FormControlValue<string> = new FormControlValue({validator: alwaysTrue, value: 'abc'});
+        let check: FormControlValue<boolean> = new FormControlValue({validator: alwaysTrue, value: true});
 
         type typeName = TTypeFromIFormControlState<FormControlValue<string>>;
         let assert_typeName: TCheck<typeName, string> = true;
@@ -215,8 +230,8 @@ describe("For a formModel ", function() {
     })
 
     it('type inference works works for primitive FormControlArray', function() {
-        let nameArray = new FormControlArray((val:string) => new FormControlValue<string>(alwaysTrue));
-        let checkArray = new FormControlArray(() => new FormControlValue<boolean>(alwaysTrue, true));
+        let nameArray = new FormControlArray((val:string) => new FormControlValue<string>({validator: alwaysTrue}));
+        let checkArray = new FormControlArray(() => new FormControlValue<boolean>({validator: alwaysTrue, value: true}));
 
         let nameArrayValues = nameArray.value;
         let assert_nameArrayValues: TCheck<typeof nameArrayValues, string[]> = true;
@@ -227,9 +242,9 @@ describe("For a formModel ", function() {
 
     it('type inference works works for nested FormControlArray', function() {
         let fn = (val:string) => new  FormControlMap({
-            name: new FormControlValue<string>(alwaysTrue, 'abc')
+            name: new FormControlValue<string>({validator: alwaysTrue, value: 'abc'})
         });
-        let nameArray = new FormControlArray(fn, alwaysTrue, ['abc']);
+        let nameArray = new FormControlArray(fn, {values: ['abc']});
 
         let values = nameArray.value;
         let assert_values: TCheck<typeof values, Array<{name: string}>> = true;
