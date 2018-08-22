@@ -15,7 +15,8 @@
                         </div>
                         <div class="form-group">
                             <label for="email">E-mail</label>
-                            <input type="text" :class="{'is-invalid' : $v.profile.email.$error, 'form-control': true}" v-model.lazy.trim="$v.profile.email.$model" name="email" placeholder="Enter e-mail" :disabled="readonly"/>
+                            <input type="text" :class="{'is-invalid' : $v.profile.email.$error, 'form-control': true}"
+                                   v-model.lazy.trim="$v.profile.email.$model" name="email" placeholder="Enter e-mail" :disabled="readonly"/>
                             <div v-if="$v.profile.email.$error" class="invalid-feedback">Please enter a valid e-mail address</div>
                         </div>
                         <div class="form-check">
@@ -26,9 +27,24 @@
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone number</label>
-                            <input type="text" :class="{'is-invalid' : $v.profile.phone.$error, 'form-control': true}" v-model.lazy.trim="$v.profile.phone.$model" name="phone" placeholder="Enter phone number" :disabled="readonly || !profile.allowPhone"/>
+                            <input type="text" :class="{'is-invalid' : $v.profile.phone.$error, 'form-control': true}"
+                                   v-model.lazy.trim="$v.profile.phone.$model" name="phone" placeholder="Enter phone number"
+                                   :disabled="readonly || !profile.allowPhone"/>
                             <div v-if="$v.profile.phone.$error" class="invalid-feedback">Please enter a valid phone number</div>
                         </div>
+                        <div class="form-group">
+                            <label for="password">Passwort</label>
+                            <input type="password" :class="{'is-invalid': $v.profile.password.$error, 'form-control': true}"
+                                   v-model.lazy.trim="$v.profile.password.$model" name="password" placeholder="Gib dein Password ein."
+                                />
+                            <div v-if="$v.profile.password.$error" class="invalid-feedback">Gib mindestens vier Zeichen ein.</div>
+
+                            <label for="password2">Passwort Wiederholung</label>
+                            <input type="password" :class="{'is-invalid': $v.profile.password2.$error, 'form-control': true}"
+                                v-model.lazy.trim="$v.profile.password2.$model" name="password2" placeholder="Wiederhole dein Passwort"/>
+                            <div v-if="$v.profile.password2.$error" class="invalid-feedback">Die Wiederholung ist nicht korrekt.</div>
+                        </div>
+                        {{this.profile}}
                     </form>
                     <div class="mt-2">
                         <button type="button" href="#" class="btn btn-primary" @click="save" :disabled="$v.$invalid">Save</button>
@@ -50,6 +66,10 @@ let  phoneOk = function(value) {
         if (!this.profile.allowPhone) return true;
         return minLength(3)(value) && maxLength(14)(value);
     };
+let password2 = function(value) {
+  console.log("password check", this.profile.password, this.profile.password2);
+  return (this.profile.password === this.profile.password2);
+};
 
 export default Vue.extend({
   name: 'profile',
@@ -76,6 +96,14 @@ export default Vue.extend({
         phone: {
             phoneOk: phoneOk,
         },
+        password: {
+          required,
+          minLength: minLength(4)
+        },
+      password2: {
+          required,
+        password2Check: password2,
+      }
     },
   },
   methods: {
@@ -83,6 +111,7 @@ export default Vue.extend({
           this.$router.push({name: 'home'});
       },
       save() {
+        console.log('save');
           this.$store.commit('updateProfile', this.profile);
           this.message = 'Profile updated';
           this.readonly = true;

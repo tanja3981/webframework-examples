@@ -10,6 +10,8 @@ const store = new Vuex.Store({
             email: '',
             allowPhone: true,
             phone: '',
+            password: '',
+            password2: ''
         },
         comboBoxValues: [
             { label: 'A', value: 'A', minValue: 10, maxValue: 100, step: 5 },
