@@ -10,12 +10,14 @@ export class StoreService {
     comboBoxValues: IComboBoxValue[];
     columns: ISelectionData[];
 
-  constructor() { 
+  constructor() {
     this.profile = {
         name: '',
         email: '',
         allowPhone: true,
         phone: '',
+      password: '',
+      password2: ''
     };
 
     this.comboBoxValues = [

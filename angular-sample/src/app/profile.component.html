@@ -34,9 +34,24 @@
                                 required minlength="3" maxlength="14"/>
                             <div *ngIf="phone.dirty && phone.invalid" class="invalid-feedback">Please enter a valid phone number</div>
                         </div>
+                        <div class="form-group">
+                          <label for="pwd1">Passwort</label>
+                          <input type="password" [ngClass]="{'is-invalid': pwd1.dirty && pwd1.invalid}"
+                              class='form-control' name="pwd1" [(ngModel)]="profile.password" #pwd1="ngModel" placeholder="Geben Sie das Passwort ein"
+                                 required minlength="3"/>
+                          <div *ngIf="pwd1.dirty && pwd1.invalid" class="invalid-feedback">Bitte geben Sie mindestens 3 Zeichen ein.</div>
+
+                          <label for="pwd2">Passwort Wiederholung</label>
+                          <input type="password" [ngClass]="{'is-invalid': pwd2.dirty && pwd2.invalid}"
+                                 class="form-control" name="pwd2" placeholder="Wiederholen Sie ihr Passwort"
+                                 pwd1="{{profile.password}}" required [(ngModel)]="profile.password2" #pwd2="ngModel"/>
+                          <div *ngIf="pwd2.dirty && pwd2.invalid" class="invalid-feedback">Die Wiederholung stimmt nicht!</div>
+
+                        </div>
                         <div>
                             name:{{profile | json}}
                             t: {{name.touched}} d: {{name.dirty}} v: {{name.valid}}
+
                         </div>
                         <div class="mt-2">
                             <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!profileForm.dirty || profileForm.invalid">Save</button>
