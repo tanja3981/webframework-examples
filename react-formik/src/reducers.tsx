@@ -11,6 +11,8 @@ const initialProfileState : IProfileData = {
     email: '',
     allowPhone: true,
     phone: '',
+    password: '',
+    password2: ''
 }
 
 const initialComoboBoxValuesState : IComboBoxValue[] = [

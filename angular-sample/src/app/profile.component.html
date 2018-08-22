@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Profile</h5>
-                    <form #profileForm="ngForm" novalidate>
+                    <form #profileForm="ngForm" novalidate id="form">
                         <div class="form-group">
                             <label for="name">Name</label>
                             <input type="text" [ngClass]="{'is-invalid' : name.dirty && name.invalid}" class='form-control' name="name"  [(ngModel)]="profile.name" #name="ngModel" placeholder="Enter name"
@@ -38,13 +38,14 @@
                           <label for="pwd1">Passwort</label>
                           <input type="password" [ngClass]="{'is-invalid': pwd1.dirty && pwd1.invalid}"
                               class='form-control' name="pwd1" [(ngModel)]="profile.password" #pwd1="ngModel" placeholder="Geben Sie das Passwort ein"
-                                 required minlength="3"/>
+                                 required minlength="3" onchange="form.controls['pwd2'].validate()"/>
                           <div *ngIf="pwd1.dirty && pwd1.invalid" class="invalid-feedback">Bitte geben Sie mindestens 3 Zeichen ein.</div>
 
                           <label for="pwd2">Passwort Wiederholung</label>
-                          <input type="password" [ngClass]="{'is-invalid': pwd2.dirty && pwd2.invalid}"
+                          <input id="pwd2" type="password" [ngClass]="{'is-invalid': pwd2.dirty && pwd2.invalid}"
                                  class="form-control" name="pwd2" placeholder="Wiederholen Sie ihr Passwort"
-                                 pwd1="{{profile.password}}" required [(ngModel)]="profile.password2" #pwd2="ngModel"/>
+                                 pwd1="{{profile.password}}" required [(ngModel)]="profile.password2" #pwd2="ngModel"
+                                 />
                           <div *ngIf="pwd2.dirty && pwd2.invalid" class="invalid-feedback">Die Wiederholung stimmt nicht!</div>
 
                         </div>
