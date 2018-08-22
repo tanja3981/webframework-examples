@@ -2,7 +2,11 @@ import * as React from 'react';
 import './App.css';
 import {Formik, Field, FieldArray} from 'formik';
 import {alwaysTrue, required, minLength, maxLength, pattern, email, composeValidators} from './validators';
-import {IProfileData} from './types'
+import {IComboBoxValue, IProfileData} from './types'
+import {flashMessageSet, listItemSave} from "./actions";
+import {connect} from "react-redux";
+import {Simulate} from "react-dom/test-utils";
+import submit = Simulate.submit;
 
 interface IPageData {
     profile: IProfileData;
@@ -50,19 +54,24 @@ const validatePhone = (allowPhone: boolean) => {
 };
 
 const validate = (values: IPageData) => {
-    return {
-        profile: {
+
+    let
+        profile = {
             name: validateName(values.profile.name),
             email: validateEMail(values.profile.email),
             phone: validatePhone(values.profile.allowPhone)(values.profile.phone),
             password: validatePassword(values.profile.password) && validatePasswortRepeated(values.profile.password, values.profile.password2),
             password2: validatePasswortRepeated(values.profile.password, values.profile.password2)
-        }
+        };
+    if(profile.name || profile.email || profile.phone || profile.password || profile.password2) {
+        return profile;
     }
+    return alwaysTrue;
+    console.log("validate " , profile);
 };
 
 
-const Complex = () => (
+const Profile = () => (
     <Formik
         initialValues={initialData}
         validateOnChange={true}
@@ -154,7 +163,7 @@ const Complex = () => (
                                         <div className="invalid-feedback">{errors.profile.password2}</div>}
                                     </div>
 
-                                </form>
+
                                 <div>
                                     values: {JSON.stringify(values.profile)}
                                 </div>
@@ -165,11 +174,12 @@ const Complex = () => (
                                     touched: {JSON.stringify(touched)}
                                 </div>
                                 <div className="mt-2">
-                                    <button type="button" className="btn btn-primary"
+                                    <button type="handleSubmit" className="btn btn-primary"
                                             disabled={Object.keys(errors.profile || {}).length > 0 ? true : false}>Save
                                     </button>
                                     <button type="button" className="ml-3 btn btn-secondary">Cancel</button>
                                 </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -184,4 +194,19 @@ autocomplete="off"
 {'is-invalid' : s.amount.$error, '
 */
 
-export default Complex;
+
+
+const mapStateToProps = (state: any, props: any) => {
+    console.log("Profile Component mapStateToProps", state, props);
+    return state.profile;
+};
+
+const mapDispatchToProps = (dispatch:any) => {
+    return {
+        save: (item: IProfileData) => {
+            console.log("Profile.save ", item)
+        }
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
