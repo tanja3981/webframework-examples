@@ -40,7 +40,7 @@ export interface IUser {
     id: string;
 }
 export enum EGeschlecht {
-    weiblich,
-    maennlich,
-    undefiniert
+    weiblich= ("w"),
+    maennlich=("m"),
+    undefiniert=("u")
 }
