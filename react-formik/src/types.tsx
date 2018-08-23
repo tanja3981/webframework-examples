@@ -31,3 +31,16 @@ export interface IState {
     complex: ISelectionData[];
     flashMessage: string;
   };
+
+export interface IUser {
+    geschlecht: EGeschlecht;
+    aktiv: boolean;
+    name: string;
+    vorname: string;
+    id: string;
+}
+export enum EGeschlecht {
+    weiblich,
+    maennlich,
+    undefiniert
+}
