@@ -7,7 +7,7 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Users</h5>
-
+          {{geschlechtKeys.keys | json}}
           <table>
             <thead>
             <tr>
@@ -18,10 +18,11 @@
             </tr>
             </thead>
             <tbody>
+
             <tr *ngFor="let user of users; let i = index" [attr.data-index]="i">
               <td>
                 <label *ngIf="editItem !== user.id">{{user.name}}</label>
-                <input *ngIf="editItem === user.id" [(ngModel)]="user.name" />
+                <input *ngIf="editItem === user.id" [(ngModel)]="user.name"/>
 
               </td>
               <td>{{user.vorname}}</td>
@@ -29,8 +30,16 @@
                 <input type="checkbox" ngModel="user.aktiv" contenteditable="editItem === user.id"/>
               </td>
               <td>
+
+                <select>
+                  <option *ngFor="let key of geschlechtValues" [value]="key" [label]="geschlechtKeys[key]"></option>
+                </select>
+              </td>
+              <td>
                 <button *ngIf="editItem !== user.id" class="btn btn-primary" (click)="edit(user.id)">Edit</button>
-                <button type="submit" *ngIf="editItem === user.id" class="btn btn-primary" (click)="save(i, user)">Save</button>
+                <button type="submit" *ngIf="editItem === user.id" class="btn btn-primary" (click)="save(i, user)">
+                  Save
+                </button>
               </td>
             </tr>
             </tbody>
