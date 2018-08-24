@@ -1,4 +1,4 @@
-import {IComboBoxValue, IProfileData} from './types';
+import {IComboBoxValue, IProfileData, IUser} from './types';
 
 export const LIST_SHOW = 'LIST_SHOW';
 export const LIST_ITEM_DETAIL = 'LIST_ITEM_DETAIL';
@@ -7,6 +7,8 @@ export const LIST_ITEM_SAVE = 'LIST_ITEM_SAVE';
 
 export const PROFILE_SHOW = 'PROFILE_SHOW';
 export const PROFILE_SAVE = 'PROFILE_SAVE';
+export const USERS_LOAD = 'USER_LOAD';
+export const USER_SAVE = 'USER_SAVE';
 
 export const COMPLEX_SHOW = 'COMPLEX_SHOW';
 
@@ -58,5 +60,15 @@ export function flashMessageSet(message: string) {
     return {
         type: FLASH_MESSAGE_SET,
         message
+    }
+}
+export function userLoad(users: IUser[]) {
+    return {
+        type: USERS_LOAD, users
+    }
+}
+export function userSave(user: IUser) {
+    return {
+        type: USER_SAVE, user
     }
 }

@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import Home from './Home';
 import Complex from './Complex';
 import Profile from './Profile';
+import UserList from './UserList';
 import ListView from './list/ListView';
 import LiNavLink from './LiNavLink';
 
@@ -25,6 +26,7 @@ class App extends React.Component {
                             <LiNavLink to='/profile'>Profile</LiNavLink>
                             <LiNavLink to='/list'>List</LiNavLink>
                             <LiNavLink to='/complex'>Complex</LiNavLink>
+                            <LiNavLink to='/users'>Users</LiNavLink>
                         </ul>
                     </nav>
                     <div className="container-fluid">
@@ -32,6 +34,7 @@ class App extends React.Component {
                         <Route path="/list" component={ListView}/>
                         <Route path="/complex" component={Complex} />
                         <Route path="/profile" component={Profile} />
+                        <Route path="/users" component={UserList} />
                     </div>
                 </div>
             </Router>
