@@ -7,47 +7,55 @@ import DetailComponent from './views/list/DetailComponent.vue';
 import EditComponent from './views/list/EditComponent.vue';
 import Profile from './views/Profile.vue';
 import Complex from './views/Complex.vue';
+import UserList from './views/UserList';
 
 Vue.use(Router);
 
 const router = new Router({
-    routes: [
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Home,
+    },
+    {
+      path: '/list',
+      component: ListView,
+      children: [
         {
-            path: '/',
-            name: 'home',
-            component: Home,
+          path: '',
+          name: 'list',
+          component: ListComponent
         },
         {
-            path: '/list',
-            component: ListView,
-            children: [
-                {
-                    path: '',
-                    name: 'list',
-                    component: ListComponent
-                },
-                {
-                    path: ':value/view',
-                    name: 'list.view',
-                    component: DetailComponent,
-                },
-                {
-                    path: ':value/edit',
-                    name: 'list.edit',
-                    component: EditComponent,
-                },
-            ]},
-            {
-                path: '/profile',
-                name: 'profile',
-                component: Profile,
-            },
-            {
-                path: '/complex',
-                name: 'complex',
-                component: Complex,
-            },
-        ],
-    });
+          path: ':value/view',
+          name: 'list.view',
+          component: DetailComponent,
+        },
+        {
+          path: ':value/edit',
+          name: 'list.edit',
+          component: EditComponent,
+        },
+
+      ]
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile,
+    },
+    {
+      path: '/complex',
+      name: 'complex',
+      component: Complex,
+    },
+    {
+      path: '/users',
+      name: 'users',
+      component: UserList
+
+    }],
+});
 
 export default router;

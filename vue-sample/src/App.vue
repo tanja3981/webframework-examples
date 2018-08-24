@@ -6,6 +6,7 @@
                 <router-link class="nav-item" tag="li" active-class="active" to='/profile'><a class="nav-link">Profile</a></router-link>
                 <router-link class="nav-item" tag="li" active-class="active" to='/list'><a class="nav-link">List</a></router-link>
                 <router-link class="nav-item" tag="li" active-class="active" to='/complex'><a class="nav-link">Complex</a></router-link>
+                <router-link class="nav-item" tag="li" active-class="active" to='/users'><a class="nav-link">Users</a></router-link>
             </ul>
         </nav>
         <div class="container-fluid">
