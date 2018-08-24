@@ -62,13 +62,12 @@ export function flashMessageSet(message: string) {
         message
     }
 }
-export function userLoad(users: IUser[]) {
-    return {
-        type: USERS_LOAD, users
-    }
-}
+
 export function userSave(user: IUser) {
+    console.log("save " , user);
+
     return {
-        type: USER_SAVE, user
+        type: USER_SAVE,
+        newUser: user,
     }
 }

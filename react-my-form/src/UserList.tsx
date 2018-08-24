@@ -2,7 +2,7 @@ import * as React from 'react';
 import './App.css';
 import {Formik, Field, FieldArray} from 'formik';
 import {alwaysTrue, required, minLength, maxLength, pattern, email, composeValidators} from './validators';
-import {IProfileData, IUser} from './types'
+import {EGeschlecht, IProfileData, IUser} from './types'
 import MyForm from './MyForm'
 import {connect} from 'react-redux';
 import {validateChildren, IFormControlState, FormControlValue, FormControlMap, FormControlArray} from './formModel';
@@ -14,43 +14,58 @@ import {render} from "react-dom";
 interface IProps {
     users: IUser[],
     userSave: typeof userSave;
-    setFlashMessage: typeof flashMessageSet;
-    editing: '';
+    setFlashMessage: typeof flashMessageSet
 }
 
-class UserList extends React.Component<IProps, {}> {
+interface IState {
+    users: IUser[],
+    editing: string,
+    message: string
+}
+
+class UserList extends React.Component<IProps, IState> {
 
     constructor(props: IProps) {
         super(props);
         this.state = {
             users: props.users,
-            editing: ''
+            editing: '',
+            message: ''
         };
         this.saveUser = this.saveUser.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange(event: any) {
+        this.setState({message: event.target.value});
     }
 
     editUser(id: string) {
         console.log("editUser", id);
-        this.setState( {editing: id});
-
+        this.setState({editing: id});
     }
 
     saveUser(user: IUser) {
+        console.log("saveUser", user);
+        this.props.userSave(user);
+    }
+
+    handleGeschlechtChange(event: any) {
 
     }
 
     render() {
-        let editing = this.props.editing;
+        //let editing = this.state.editing;
         return (
             <div>
                 <div className="row">
                     <div className="col-2">Name</div>
                     <div className="col-2">Vorname</div>
                     <div className="col-2">Aktiv</div>
-                    <div className="col-2">{editing}</div>
+                    <div className="col-2">{this.state.editing}</div>
                 </div>
                 {        //this.state =;
-                    this.props.users.map((user) => {
+                    this.state.users.map((user: IUser) => {
                         return this.renderUser(user);
                     })
                 }
@@ -58,7 +73,7 @@ class UserList extends React.Component<IProps, {}> {
                     <div className="col-10"></div>
                     <div className="col-2">
 
-                        <button className="btn btn-primary" >Neu</button>
+                        <button className="btn btn-primary">Neu</button>
                     </div>
                 </div>
 
@@ -68,25 +83,41 @@ class UserList extends React.Component<IProps, {}> {
     }
 
     renderUser(user: IUser) {
+        const isEdited = (this.state.editing === user.id);
+
         return (
             <div className="row" key={user.id}>
                 <div className="col-2">
-
-                    <label>{user.name}</label>
+                    {
+                        isEdited ?
+                            <input name="user.name" type="text" value={user.name} onChange={this.handleChange}/>
+                            :
+                            <label>{user.name}</label>
+                    }
                 </div>
-                <div className="col-2">{user.vorname}</div>
+                <div className="col-2">
+                    <label>{user.vorname}</label>
+                </div>
                 <div className="col-2">
                     <input
-                        type="checkbox" checked={user.aktiv}/>
+                        type="checkbox" checked={user.aktiv} onChange={this.handleChange}/>
                 </div>
-                <div className="col-2">{user.geschlecht}</div>
-                <div className="col-2">{user.id}
-                    {this.props.editing }
-                    {this.props.editing === user.id}
-                    </div>
                 <div className="col-2">
                     {
-                        this.props.editing === user.id ?
+                        isEdited ?
+                            <label>{user.geschlecht}</label>
+                            //<select onChange={this.handleGeschlechtChange} value={user.geschlecht}></select>-->
+                            :
+                            <label>{user.geschlecht}</label>
+                    }
+                </div>
+                <div className="col-2">{user.id}
+                    {this.state.editing}
+                    {this.state.editing === user.id}
+                </div>
+                <div className="col-2">
+                    {
+                        this.state.editing === user.id ?
                             <button
                                 className="btn btn-primary"
                                 onClick={() =>
@@ -107,6 +138,7 @@ class UserList extends React.Component<IProps, {}> {
             </div>
         );
     }
+
 }
 
 const mapStateToProps = (state: any, props: any) => {

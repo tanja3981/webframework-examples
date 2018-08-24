@@ -5,6 +5,9 @@ import * as actions from './actions';
 interface IAction {
     type: string;
 }
+interface IAddUser extends IAction {
+    newUser: IUser
+}
 
 const initialProfileState: IProfileData = {
     name: '',
@@ -62,9 +65,10 @@ function profile(state = initialProfileState, action: IAction) {
     }
 }
 
-function users(state = initialUsersState, action: IAction) {
+function users(state = initialUsersState, action: IAddUser) {
     switch (action.type) {
         case actions.USER_SAVE:
+            state.push(action.newUser);
             return (action as any).users;
         default:
             return state;
