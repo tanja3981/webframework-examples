@@ -12,6 +12,7 @@ import { ListComponent } from './list.component';
 import { ListListComponent } from './list/list.component';
 import { ListEditComponent } from './list/edit.component';
 import { ListDetailComponent } from './list/detail.component';
+import { UserList } from './userlist';
 
 import * as Validators from './validators';
 
@@ -22,6 +23,7 @@ import * as Validators from './validators';
     HomeComponent,
     ProfileComponent,
     ComplexComponent,
+    UserList,
     ListComponent,
     ListListComponent,
     ListEditComponent,

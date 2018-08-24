@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IProfileData, IComboBoxValue, ISelectionData } from './types';
+import { IProfileData, IComboBoxValue, ISelectionData, IUserData, EGeschlecht } from './types';
 
 @Injectable({
   providedIn: 'root',
@@ -7,6 +7,7 @@ import { IProfileData, IComboBoxValue, ISelectionData } from './types';
 export class StoreService {
 
     profile: IProfileData;
+    users: IUserData[];
     comboBoxValues: IComboBoxValue[];
     columns: ISelectionData[];
 
@@ -19,6 +20,22 @@ export class StoreService {
       password: '',
       password2: ''
     };
+    this.users = [
+      {
+        name: 'Einstein',
+        vorname: 'Albert',
+        geschlecht: EGeschlecht.maennlich,
+        aktiv: true,
+        id: '123'
+      }, {
+        name: 'Currie',
+        vorname: 'Madame',
+        geschlecht: EGeschlecht.weiblich,
+        aktiv: false,
+        id: '234'
+      }
+    ];
+
 
     this.comboBoxValues = [
         { label: 'A', value: 'A', minValue: 10, maxValue: 100, step: 5 },
@@ -53,7 +70,7 @@ export class StoreService {
       this.profile.phone = values.phone;
   }
 
-  updateItem(id:string, values: any) {
+  updateItem(id: string, values: any) {
       const v = this.comboBoxValues.filter(c => c.value === id);
       if (v.length === 1) {
           v[0].label = values.label;
@@ -61,6 +78,10 @@ export class StoreService {
           v[0].maxValue = Number(values.maxValue);
           v[0].step = Number(values.step);
       }
+  }
+  updateUser( index: number, user: IUserData) {
+    console.log("updateUser",  index, user);
+    this.users[index] = user;
   }
 }
 
