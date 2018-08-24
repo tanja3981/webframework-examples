@@ -23,13 +23,16 @@ class UserList extends React.Component<IProps, {}> {
     constructor(props: IProps) {
         super(props);
         this.state = {
-            users: [],
+            users: props.users,
             editing: ''
         };
+        this.saveUser = this.saveUser.bind(this);
     }
 
     editUser(id: string) {
-        this.state.editing = id;
+        console.log("editUser", id);
+        this.setState( {editing: id});
+
     }
 
     saveUser(user: IUser) {
@@ -37,36 +40,34 @@ class UserList extends React.Component<IProps, {}> {
     }
 
     render() {
-        let users = this.props.users;
         let editing = this.props.editing;
-        let editUser = this.editUser;
         return (
             <div>
                 <div className="row">
                     <div className="col-2">Name</div>
                     <div className="col-2">Vorname</div>
                     <div className="col-2">Aktiv</div>
-                    <div className="col-2">Geschlecht</div>
+                    <div className="col-2">{editing}</div>
                 </div>
-                {
+                {        //this.state =;
                     this.props.users.map((user) => {
-                        return this.renderUser(user, this.editUser(user.id));
+                        return this.renderUser(user);
                     })
                 }
                 <div className="row">
                     <div className="col-10"></div>
                     <div className="col-2">
-                        <button className="btn btn-primary">Neu</button>
+
+                        <button className="btn btn-primary" >Neu</button>
                     </div>
                 </div>
-                {this.props.editing}
+
             </div>
         );
 
     }
 
-    renderUser(user: IUser, editUser: void) {
-
+    renderUser(user: IUser) {
         return (
             <div className="row" key={user.id}>
                 <div className="col-2">
@@ -79,14 +80,29 @@ class UserList extends React.Component<IProps, {}> {
                         type="checkbox" checked={user.aktiv}/>
                 </div>
                 <div className="col-2">{user.geschlecht}</div>
-                <div className="col-2">{user.id}</div>
+                <div className="col-2">{user.id}
+                    {this.props.editing }
+                    {this.props.editing === user.id}
+                    </div>
                 <div className="col-2">
-                    <button
-                        className="btn btn-primary"
-                        onClick={() =>
-                            editUser
-                        }>Bearbeiten
-                    </button>
+                    {
+                        this.props.editing === user.id ?
+                            <button
+                                className="btn btn-primary"
+                                onClick={() =>
+                                    this.saveUser(user)
+                                }>Speichern
+                            </button>
+                            :
+                            <button
+                                className="btn btn-primary"
+                                onClick={() =>
+                                    this.editUser(user.id)
+                                }>Bearbeiten
+                            </button>
+                    }
+
+
                 </div>
             </div>
         );
@@ -96,7 +112,8 @@ class UserList extends React.Component<IProps, {}> {
 const mapStateToProps = (state: any, props: any) => {
     console.log("UserList Component mapStateToProps", state, props);
     return {
-        users: state.users
+        users: state.users,
+        editing: state.editing
     }
 }
 
