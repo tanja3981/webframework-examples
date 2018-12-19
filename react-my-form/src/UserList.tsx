@@ -84,13 +84,16 @@ class UserList extends React.Component<IProps, IState> {
 
     renderUser(user: IUser) {
         const isEdited = (this.state.editing === user.id);
-
+        let handleChange = (event: any) => {
+            console.log("handleChange", event);
+            return true;
+        };
         return (
             <div className="row" key={user.id}>
                 <div className="col-2">
                     {
                         isEdited ?
-                            <input name="user.name" type="text" value={user.name} onChange={this.handleChange}/>
+                            <input name="user.name" type="text" value={user.name} onChange={handleChange}/>
                             :
                             <label>{user.name}</label>
                     }

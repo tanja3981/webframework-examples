@@ -8,6 +8,8 @@ export const LIST_ITEM_SAVE = 'LIST_ITEM_SAVE';
 export const PROFILE_SHOW = 'PROFILE_SHOW';
 export const PROFILE_SAVE = 'PROFILE_SAVE';
 
+export const USER_SAVED = 'USER_SAVED';
+
 export const COMPLEX_SHOW = 'COMPLEX_SHOW';
 
 export const FLASH_MESSAGE_SET = 'FLASH_MESSAGE_SET';
